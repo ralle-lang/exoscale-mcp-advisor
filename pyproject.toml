@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "exoscale-mcp-advisor"
+version = "0.0.0"
+description = "Read-only Exoscale advisor MCP server — docs search plus list-only live catalogue queries, structurally incapable of mutation."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Raphael Lang" }]
+keywords = ["exoscale", "mcp", "advisor", "cloud", "ai", "read-only"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Typing :: Typed",
+]
+# Runtime dependencies (the official `mcp` SDK and `exoscale-connector`) are
+# declared when implementation begins — see docs/mcp-advisor-design.md §8.
+# Kept empty in this bootstrap skeleton so CI stays green without coupling to
+# PyPI publication state of those packages yet.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "ruff>=0.4",
+    "mypy>=1.8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/exoscale_mcp_advisor"]
