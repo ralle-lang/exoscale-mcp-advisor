@@ -16,11 +16,18 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Typing :: Typed",
 ]
-# Runtime dependencies (the official `mcp` SDK and `exoscale-connector`) are
-# declared when implementation begins — see docs/mcp-advisor-design.md §8.
-# Kept empty in this bootstrap skeleton so CI stays green without coupling to
-# PyPI publication state of those packages yet.
-dependencies = []
+# Runtime dependencies — see docs/mcp-advisor-design.md §8.
+# - `mcp`: the official Model Context Protocol Python SDK (stdio server, FastMCP).
+# - `exoscale-connector>=0.3.0`: first release shipping the packaged
+#   `_skill/reference.md` knowledge bundle this server reads (design §4) and the
+#   read-only `list` catalogue clients it wraps (design §3).
+# mcp is capped below 2.0: the server uses FastMCP / ToolAnnotations and the
+# structural test introspects the tool manager, so a major SDK bump could break
+# the build and must be vetted deliberately rather than picked up silently.
+dependencies = [
+    "mcp>=1.2,<2",
+    "exoscale-connector>=0.3.0",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -28,6 +35,11 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.8",
 ]
+
+[project.scripts]
+# `uvx exoscale-mcp-advisor` (or a plain console invocation) starts the stdio
+# server — design §8. No clone/install step for consumers.
+exoscale-mcp-advisor = "exoscale_mcp_advisor.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/exoscale_mcp_advisor"]
