@@ -17,6 +17,7 @@ from exoscale_connector.errors import APIError
 from mcp.client.session import ClientSession
 from mcp.shared.memory import create_connected_server_and_client_session as connect
 
+import exoscale_mcp_advisor.server as server_module
 from exoscale_mcp_advisor.catalogue import Catalogue
 from exoscale_mcp_advisor.docs import DocsBundle
 from exoscale_mcp_advisor.server import build_server
@@ -168,3 +169,16 @@ def test_connector_api_error_surfaces_as_tool_error() -> None:
             assert result.isError is True
 
     _run(scenario)
+
+
+def test_main_builds_the_server_and_runs_it(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """The console-script entry point builds a server and serves over stdio."""
+    ran: dict[str, bool] = {}
+
+    class _Stub:
+        def run(self) -> None:
+            ran["called"] = True
+
+    monkeypatch.setattr(server_module, "build_server", lambda: _Stub())
+    server_module.main()
+    assert ran.get("called") is True

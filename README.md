@@ -6,11 +6,12 @@ connector documentation and run **list-only** live catalogue queries (zones,
 instance types, templates). It is, by construction, incapable of mutating any
 cloud resource.
 
-> **Status: implemented, pre-publish.** All five tools, the stdio server, and the
-> four-layer test suite (structural no-mutation, mocked-connector, protocol-level,
-> gated live smoke) are in place and green. PyPI publication is the remaining
-> step, so for now run it from a source checkout (see the user guide). The full
-> design is in [`docs/mcp-advisor-design.md`](docs/mcp-advisor-design.md).
+> **Status: released.** Five tools, the stdio server, and the four-layer test
+> suite (structural no-mutation, mocked-connector, protocol-level, gated live
+> smoke) are in place and green; published to PyPI as
+> [`exoscale-mcp-advisor`](https://pypi.org/project/exoscale-mcp-advisor/). The
+> full design is in [`docs/mcp-advisor-design.md`](docs/mcp-advisor-design.md);
+> release history is in [`CHANGELOG.md`](CHANGELOG.md).
 
 It builds on [`exoscale-connector`](https://github.com/ralle-lang/exoscale-python-connector):
 the knowledge it serves is read from that package's bundled reference, and the
@@ -42,13 +43,13 @@ No mutation tools — ever, by design.
 
 ## User guide
 
-Once published to PyPI the server runs with no clone or install step:
+The server runs with no clone or install step:
 
 ```bash
 uvx exoscale-mcp-advisor
 ```
 
-Until then, run it from a source checkout:
+Or from a source checkout (for development):
 
 ```bash
 pip install -e .
