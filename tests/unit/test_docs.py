@@ -135,6 +135,27 @@ def test_snippet_is_present_and_bounded() -> None:
     assert len(snippet) <= 260
 
 
+def test_section_ids_are_disambiguated_when_heading_paths_collide() -> None:
+    # Two sibling sections with the same heading under the same parent would
+    # produce the same id path; the second must be suffixed to stay unique.
+    # Three colliding siblings force the suffix to advance past -2 as well.
+    bundle = DocsBundle(
+        "# Root\n\n## Dup\n\nalpha\n\n## Dup\n\nbeta\n\n## Dup\n\ngamma\n"
+    )
+    results = bundle.search("alpha beta gamma", limit=10)
+    ids = [r["section_id"] for r in results]
+    assert len(ids) == len(set(ids)), ids
+    assert {"root/dup", "root/dup-2", "root/dup-3"} <= set(ids)
+
+
+def test_snippet_falls_back_to_body_head_when_match_is_heading_only() -> None:
+    # 'zones' is only in the heading; the body has no occurrence, so the snippet
+    # falls back to the start of the body rather than a match window.
+    bundle = DocsBundle("# Root\n\n## Zones\n\nThe catalogue lists regions live.\n")
+    snippet = str(bundle.search("zones", limit=1)[0]["snippet"])
+    assert snippet.startswith("The catalogue lists")
+
+
 def test_default_bundle_loads_the_real_packaged_reference() -> None:
     # Production loader: reads exoscale_connector/_skill/reference.md.
     bundle = default_bundle()

@@ -43,3 +43,7 @@ exoscale-mcp-advisor = "exoscale_mcp_advisor.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/exoscale_mcp_advisor"]
+
+[tool.coverage.report]
+# The module-execution guard is a launcher line, not behaviour to test.
+exclude_also = ["if __name__ == .__main__.:"]

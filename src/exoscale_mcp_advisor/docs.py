@@ -65,10 +65,6 @@ class Section:
     body: str
     order: int
 
-    @property
-    def text(self) -> str:
-        return f"{self.heading}\n{self.body}".strip()
-
 
 @dataclass(frozen=True)
 class AssetPage:
