@@ -103,9 +103,18 @@ mypy src                 # type-check
 pytest tests/unit -q     # unit tests
 ```
 
-The gated live smoke test (under `tests/integration`, once added) talks to a
-real account using only `list`, and is opt-in behind an environment flag — it is
-never run in CI.
+The gated live smoke test (under `tests/integration`) talks to a real account
+using only `list`, and is opt-in behind `EXOSCALE_RUN_LIVE_TESTS=1` — default-
+skipped, and never run in CI. Run it with credentials injected from the
+environment (never hardcoded):
+
+```bash
+EXOSCALE_RUN_LIVE_TESTS=1 \
+  infisical run --domain http://localhost:8080 -- \
+  pytest tests/integration -q
+```
+
+It is read-only, so safe to run against any account.
 
 **Architecture & contribution.** Read
 [`docs/mcp-advisor-design.md`](docs/mcp-advisor-design.md) first — it defines the
