@@ -6,10 +6,11 @@ connector documentation and run **list-only** live catalogue queries (zones,
 instance types, templates). It is, by construction, incapable of mutating any
 cloud resource.
 
-> **Status: bootstrap.** This repository currently contains the design document,
-> project skeleton, CI, and license. The server is **not yet implemented** —
-> implementation is tracked by issues here. See
-> [`docs/mcp-advisor-design.md`](docs/mcp-advisor-design.md) for the full design.
+> **Status: implemented, pre-publish.** All five tools, the stdio server, and the
+> four-layer test suite (structural no-mutation, mocked-connector, protocol-level,
+> gated live smoke) are in place and green. PyPI publication is the remaining
+> step, so for now run it from a source checkout (see the user guide). The full
+> design is in [`docs/mcp-advisor-design.md`](docs/mcp-advisor-design.md).
 
 It builds on [`exoscale-connector`](https://github.com/ralle-lang/exoscale-python-connector):
 the knowledge it serves is read from that package's bundled reference, and the
@@ -27,7 +28,7 @@ while the server remains structurally unable to create, change, or delete
 anything. Infrastructure changes stay the human's job, performed with reviewed,
 idempotent code.
 
-Planned tool surface (v1, see design §3):
+Tool surface (v1, see design §3):
 
 | Tool | Purpose |
 |------|---------|
@@ -41,12 +42,17 @@ No mutation tools — ever, by design.
 
 ## User guide
 
-> Applies once the server is implemented and published.
-
-The server will be runnable without a clone:
+Once published to PyPI the server runs with no clone or install step:
 
 ```bash
 uvx exoscale-mcp-advisor
+```
+
+Until then, run it from a source checkout:
+
+```bash
+pip install -e .
+exoscale-mcp-advisor            # or: python -m exoscale_mcp_advisor
 ```
 
 It speaks MCP over **stdio**, so it is configured like any other stdio MCP
@@ -64,8 +70,6 @@ Use a **least-privilege, read-only** API key (see the Admin guide). The docs
 tools work with no credentials at all.
 
 ## Admin guide
-
-> Applies once the server is implemented.
 
 **Least-privilege credentials (defense in depth).** Although the server can only
 issue `list` calls, the API key it runs with should also be restricted to

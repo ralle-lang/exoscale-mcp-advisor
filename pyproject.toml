@@ -21,8 +21,11 @@ classifiers = [
 # - `exoscale-connector>=0.3.0`: first release shipping the packaged
 #   `_skill/reference.md` knowledge bundle this server reads (design §4) and the
 #   read-only `list` catalogue clients it wraps (design §3).
+# mcp is capped below 2.0: the server uses FastMCP / ToolAnnotations and the
+# structural test introspects the tool manager, so a major SDK bump could break
+# the build and must be vetted deliberately rather than picked up silently.
 dependencies = [
-    "mcp>=1.2",
+    "mcp>=1.2,<2",
     "exoscale-connector>=0.3.0",
 ]
 

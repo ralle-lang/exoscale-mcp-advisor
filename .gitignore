@@ -56,6 +56,11 @@ kubeconfig
 # keep them local.
 *.log
 
+# Local-only working notes (handover, review logs) — never belong in a PUBLIC
+# repo; they may reference infrastructure or vault details.
+HANDOVER.md
+*.local.md
+
 # ─────────────────────────────────────────────────────────────────────────
 # Build / cache / environment — not harmful, just noise.
 # ─────────────────────────────────────────────────────────────────────────
