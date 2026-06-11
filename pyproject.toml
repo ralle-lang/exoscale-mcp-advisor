@@ -4,7 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "exoscale-mcp-advisor"
-version = "0.0.0"
+# Version is single-sourced from the package __version__ (see [tool.hatch.version]).
+dynamic = ["version"]
 description = "Read-only Exoscale advisor MCP server — docs search plus list-only live catalogue queries, structurally incapable of mutation."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,8 +13,18 @@ license = { text = "MIT" }
 authors = [{ name = "Raphael Lang" }]
 keywords = ["exoscale", "mcp", "advisor", "cloud", "ai", "read-only"]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Systems Administration",
     "Typing :: Typed",
 ]
 # Runtime dependencies — see docs/mcp-advisor-design.md §8.
@@ -29,17 +40,29 @@ dependencies = [
     "exoscale-connector>=0.3.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/ralle-lang/exoscale-mcp-advisor"
+Repository = "https://github.com/ralle-lang/exoscale-mcp-advisor"
+Issues = "https://github.com/ralle-lang/exoscale-mcp-advisor/issues"
+Changelog = "https://github.com/ralle-lang/exoscale-mcp-advisor/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4",
     "ruff>=0.4",
     "mypy>=1.8",
+    "coverage>=7.0",
+    "build>=1.0",
+    "twine>=5.0",
 ]
 
 [project.scripts]
 # `uvx exoscale-mcp-advisor` (or a plain console invocation) starts the stdio
 # server — design §8. No clone/install step for consumers.
 exoscale-mcp-advisor = "exoscale_mcp_advisor.server:main"
+
+[tool.hatch.version]
+path = "src/exoscale_mcp_advisor/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/exoscale_mcp_advisor"]
