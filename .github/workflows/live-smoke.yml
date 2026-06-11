@@ -1,0 +1,26 @@
+name: Live smoke
+
+# The gated live smoke (tests/integration) is read-only — it only lists zones,
+# instance types, and templates against a real account. It is NEVER part of the
+# PR/push CI (no credentials there); it runs only on manual dispatch, using a
+# least-privilege, read-only Exoscale key stored in repository secrets.
+on:
+  workflow_dispatch:
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install package with dev dependencies
+        run: pip install -e '.[dev]'
+      - name: Run gated live smoke (read-only)
+        env:
+          EXOSCALE_RUN_LIVE_TESTS: "1"
+          EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
+          EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
+          EXOSCALE_ZONE: ${{ secrets.EXOSCALE_ZONE }}
+        run: pytest tests/integration -q
