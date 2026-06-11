@@ -33,5 +33,10 @@ dev = [
     "mypy>=1.8",
 ]
 
+[project.scripts]
+# `uvx exoscale-mcp-advisor` (or a plain console invocation) starts the stdio
+# server — design §8. No clone/install step for consumers.
+exoscale-mcp-advisor = "exoscale_mcp_advisor.server:main"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/exoscale_mcp_advisor"]
