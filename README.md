@@ -91,6 +91,49 @@ actionable error while the docs tools keep working. The catalogue exposes **no
 pricing** — use [Exoscale's calculator](https://www.exoscale.com/pricing/) for
 cost estimates.
 
+## Example use cases
+
+What the advisor is for, from trivial to advanced. Every example is **read-only**:
+the server produces explanations and reviewable code — it never provisions,
+changes, or deletes anything (design D1). Each rung notes the tools it exercises
+and whether credentials are needed.
+
+1. **Docs lookup — no credentials.**
+   *"Search the Exoscale docs for how to create a security group, then show me
+   the full security-group reference page."*
+   → `search_docs` + `get_asset_page` (discover slugs first with
+   `list_asset_types`). Works with zero credentials.
+
+2. **A single live query — credentials.**
+   *"What instance types are available in `at-vie-1` right now?"* or *"List the
+   public templates and their default login user."*
+   → one live tool (`list_instance_types` / `list_templates`). `memory_gib` and
+   `size_gib` come pre-derived, so no manual byte math.
+
+3. **Live + docs synthesis — credentials.**
+   *"Compare the instance types in `at-vie-1` and recommend the cheapest one
+   suitable as an SKS worker, citing the sizing constraints."*
+   → a live tool + `get_asset_page` + reasoning. The advisor cites the verified
+   docs; it has no pricing data, so cost questions defer to Exoscale's
+   calculator.
+
+4. **Multi-asset design, read-only — credentials.**
+   *"Design an HA web-app stack in `at-vie-1` (load balancer + web tier +
+   managed database), cite the docs for each asset, and don't provision
+   anything."*
+   → many `get_asset_page` (+ `list_dbaas_plans`, `list_zones`) with trade-off
+   reasoning. You get a design and citations, never a side effect.
+
+5. **Reviewable code generation — credentials.**
+   *"Generate an `exoscale-connector` script that provisions the stack above,
+   with secrets side-loaded from the environment — but I'll run it."*
+   → the **advisor, not operator** pattern: read-only advice plus a script
+   *you* review and run. The server stays structurally unable to apply changes.
+
+The jump from rung 1 to rung 5 is the whole point: a low-friction, credential-free
+entry for learning, and an aspirational ceiling where the advisor designs and
+writes the infrastructure code while a human keeps the keys and the final apply.
+
 ## Admin guide
 
 **Least-privilege credentials (defense in depth).** Although the server can only
