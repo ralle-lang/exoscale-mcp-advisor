@@ -29,16 +29,18 @@ classifiers = [
 ]
 # Runtime dependencies — see docs/mcp-advisor-design.md §8.
 # - `mcp`: the official Model Context Protocol Python SDK (stdio server, FastMCP).
-# - `exoscale-connector>=0.4.0`: 0.3.0 first shipped the packaged
+# - `exoscale-connector>=0.5.0`: 0.3.0 first shipped the packaged
 #   `_skill/reference.md` knowledge bundle this server reads (design §4) and the
-#   read-only `list` catalogue clients it wraps (design §3); 0.4.0 adds
-#   `SksClusterClient.list_versions` backing the `list_sks_versions` tool (§15).
+#   read-only `list` catalogue clients it wraps (design §3); 0.4.0 added
+#   `SksClusterClient.list_versions` backing the `list_sks_versions` tool (§15);
+#   0.5.0 hardened the HTTP layer with connection-level retry resilience, which
+#   the live `list` tools run on — so the floor moves to 0.5.0 to ship on it.
 # mcp is capped below 2.0: the server uses FastMCP / ToolAnnotations and the
 # structural test introspects the tool manager, so a major SDK bump could break
 # the build and must be vetted deliberately rather than picked up silently.
 dependencies = [
     "mcp>=1.2,<2",
-    "exoscale-connector>=0.4.0",
+    "exoscale-connector>=0.5.0",
 ]
 
 [project.urls]

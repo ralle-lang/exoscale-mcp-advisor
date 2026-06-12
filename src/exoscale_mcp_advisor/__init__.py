@@ -6,4 +6,4 @@ the server is, by construction, incapable of mutating any cloud resource
 (design §6).
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
