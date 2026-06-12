@@ -60,6 +60,13 @@ exoscale-connector    (this repo)
 
 ## 3. Tool surface (v1)
 
+> **Current surface:** v1 shipped five tools; the surface has grown since. The
+> post-v1 additions are recorded in the per-release addenda — §14 (v0.2.0) and
+> §15 (v0.3.0) — which carry their own tool tables. §3 below is kept as the
+> frozen v1 record. The structural no-mutation test (§6) parses every tool table
+> in this document and fails the build if their union drifts from the registered
+> tool set, so "the docs reflect the code" is mechanical, not a promise.
+
 Five tools, two groups. Nothing else in v1.
 
 ### Docs tools (offline, sourced from the connector bundle)
@@ -281,3 +288,34 @@ the other live tools only when supplied.
 - **No pricing, stated explicitly:** the server `instructions` now note the
   catalogue exposes no pricing (use Exoscale's calculator), so agents don't imply
   a cost.
+
+---
+
+## 15. Addendum — v0.3.0 tool surface
+
+> Added 2026-06-12. Like §14, sections 1–13 stay verbatim as the v1 record; this
+> captures how the surface grew in 0.3.0. The invariants are unchanged: read-only
+> by construction (§6), zero knowledge duplication (§4), `list`-verb-only live
+> tools (§3).
+
+The approved read-only set grew from **seven to eight**. The structural
+no-mutation test (§6) was updated consciously, and now also parses the tool
+tables in this document and asserts their union equals the registered set — so a
+new tool that is not documented here fails the build.
+
+### New live catalogue tool
+
+| Tool | Signature | Backing connector call |
+|------|-----------|------------------------|
+| `list_sks_versions` | `list_sks_versions(zone: str \| None = None)` | `SksClusterClient(...).list_versions(...)` |
+
+`list_versions` is a read verb, consistent with the §3 "list verb only" rule. It
+wraps `GET /sks-cluster-version` and returns the Kubernetes versions a new SKS
+cluster may be created with, newest-first, as raw strings. The tool lets an agent
+ground a cluster's `version` against what the API currently accepts instead of
+hardcoding a literal that can be retired upstream. `zone` is optional because the
+endpoint is zone-agnostic, validated like the other live tools only when supplied.
+
+It requires `exoscale-connector>=0.4.0`, the release that first exposes
+`SksClusterClient.list_versions` (previously only a test fixture resolved SKS
+versions, so the connector's public API could not surface them).

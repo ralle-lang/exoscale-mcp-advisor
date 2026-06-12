@@ -162,6 +162,37 @@ def test_list_dbaas_plans_rejects_a_blank_zone_when_given() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# list_sks_versions
+# --------------------------------------------------------------------------- #
+def test_list_sks_versions_hits_the_version_endpoint_and_parses() -> None:
+    client = FakeClient(
+        {"sks-cluster-version": {"sks-cluster-versions": ["1.31.0", "1.30.4"]}}
+    )
+    versions = _catalogue(client).list_sks_versions()
+    assert versions == ["1.31.0", "1.30.4"]
+    # zone omitted → no per-call zone override.
+    assert client.calls == [("sks-cluster-version", None, None)]
+
+
+def test_list_sks_versions_empty() -> None:
+    client = FakeClient({"sks-cluster-version": {"sks-cluster-versions": []}})
+    assert _catalogue(client).list_sks_versions() == []
+
+
+def test_list_sks_versions_threads_an_explicit_zone() -> None:
+    client = FakeClient({"sks-cluster-version": {"sks-cluster-versions": []}})
+    _catalogue(client).list_sks_versions("at-vie-1")
+    assert client.calls == [("sks-cluster-version", "at-vie-1", None)]
+
+
+def test_list_sks_versions_rejects_a_blank_zone_when_given() -> None:
+    client = FakeClient()
+    with pytest.raises(ValueError, match="zone"):
+        _catalogue(client).list_sks_versions("   ")
+    assert client.calls == []
+
+
+# --------------------------------------------------------------------------- #
 # Error propagation — the tools surface connector errors rather than swallowing.
 # --------------------------------------------------------------------------- #
 def test_api_errors_propagate() -> None:

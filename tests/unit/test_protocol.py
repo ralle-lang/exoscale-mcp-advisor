@@ -20,7 +20,7 @@ from mcp.shared.memory import create_connected_server_and_client_session as conn
 import exoscale_mcp_advisor.server as server_module
 from exoscale_mcp_advisor.catalogue import Catalogue
 from exoscale_mcp_advisor.docs import DocsBundle
-from exoscale_mcp_advisor.server import build_server
+from exoscale_mcp_advisor.server import READ_ONLY_TOOL_NAMES, build_server
 
 T = TypeVar("T")
 
@@ -31,15 +31,8 @@ _BUNDLE = DocsBundle(
     "### security-group (+ rules)\n\nA security group is a firewall for instances.\n"
 )
 
-_EXPECTED_TOOLS = {
-    "search_docs",
-    "get_asset_page",
-    "list_asset_types",
-    "list_zones",
-    "list_instance_types",
-    "list_templates",
-    "list_dbaas_plans",
-}
+# Single source of truth — the approved set is defined once, in the server.
+_EXPECTED_TOOLS = set(READ_ONLY_TOOL_NAMES)
 
 
 class _FakeClient:
@@ -58,6 +51,7 @@ class _FakeClient:
             },
             "template": {"templates": [{"id": "t1", "name": "Ubuntu"}]},
             "dbaas-service-type": {"dbaas-service-types": [{"name": "pg"}]},
+            "sks-cluster-version": {"sks-cluster-versions": ["1.31.0", "1.30.4"]},
         }.get(path, {})
 
 
@@ -167,6 +161,8 @@ def test_live_tools_return_catalogue_data() -> None:
             assert templates.structuredContent["result"][0]["name"] == "Ubuntu"
             plans = await session.call_tool("list_dbaas_plans", {})
             assert plans.structuredContent["result"][0]["name"] == "pg"
+            versions = await session.call_tool("list_sks_versions", {})
+            assert versions.structuredContent["result"] == ["1.31.0", "1.30.4"]
 
     _run(scenario)
 

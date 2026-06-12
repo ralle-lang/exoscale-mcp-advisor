@@ -6,7 +6,7 @@ connector documentation and run **list-only** live catalogue queries (zones,
 instance types, templates). It is, by construction, incapable of mutating any
 cloud resource.
 
-> **Status: released.** Seven read-only tools, the stdio server, and the
+> **Status: released.** Eight read-only tools, the stdio server, and the
 > four-layer test suite (structural no-mutation, mocked-connector,
 > protocol-level, gated live smoke) are in place and green; published to PyPI as
 > [`exoscale-mcp-advisor`](https://pypi.org/project/exoscale-mcp-advisor/). The
@@ -22,12 +22,12 @@ Exoscale is hardcoded or duplicated here.
 
 ## General description
 
-The advisor targets the **learning** path, not the execution path. An agent can
-ask "what instance types exist in `at-vie-1` right now?" and "how do I create a
-security group with the connector?" — and get live data plus verified docs —
-while the server remains structurally unable to create, change, or delete
-anything. Infrastructure changes stay the human's job, performed with reviewed,
-idempotent code.
+The advisor targets the learning path, not the execution path. An agent can ask
+"what instance types exist in `at-vie-1` right now?" or "how do I create a
+security group with the connector?" and get live data plus verified docs, while
+the server stays structurally unable to create, change, or delete anything.
+Infrastructure changes stay the human's job, performed with reviewed, idempotent
+code.
 
 Tool surface (see design §3):
 
@@ -40,8 +40,9 @@ Tool surface (see design §3):
 | `list_instance_types(zone)` | ✔ | Live list of instance types (with derived `memory_gib`). |
 | `list_templates(zone, visibility)` | ✔ | Live list of templates (with derived `size_gib`). |
 | `list_dbaas_plans(zone=None)` | ✔ | Live managed-database (DBaaS) service types and plans. |
+| `list_sks_versions(zone=None)` | ✔ | Live list of Kubernetes versions a new SKS cluster may use. |
 
-The three docs tools need no credentials; the four live tools read Exoscale API
+The three docs tools need no credentials; the five live tools read Exoscale API
 credentials from the server's environment (see the User guide). No mutation
 tools — ever, by design.
 
@@ -61,9 +62,9 @@ exoscale-mcp-advisor            # or: python -m exoscale_mcp_advisor
 ```
 
 It speaks MCP over **stdio**, so it is configured like any other stdio MCP
-server in your client. The four live catalogue tools require Exoscale API
-credentials in the **server's launch environment** — never on the command line,
-never read from a file by the app:
+server in your client. The five live catalogue tools require Exoscale API
+credentials in the server's launch environment. They are never passed on the
+command line and never read from a file by the app:
 
 ```
 EXOSCALE_API_KEY=...
@@ -84,55 +85,51 @@ claude mcp add exoscale-advisor -- \
   infisical run --domain http://localhost:8080 -- uvx exoscale-mcp-advisor
 ```
 
-Use a **least-privilege, read-only** API key (see the Admin guide). The three
-docs tools (`search_docs`, `get_asset_page`, `list_asset_types`) need no
-credentials; if the live tools run without credentials they return a clear,
-actionable error while the docs tools keep working. The catalogue exposes **no
-pricing** — use [Exoscale's calculator](https://www.exoscale.com/pricing/) for
-cost estimates.
+Use a least-privilege, read-only API key (see the Admin guide). The three docs
+tools (`search_docs`, `get_asset_page`, `list_asset_types`) need no credentials;
+if the live tools run without credentials they return a clear, actionable error
+while the docs tools keep working. The catalogue exposes no pricing, so use
+[Exoscale's calculator](https://www.exoscale.com/pricing/) for cost estimates.
 
 ## Example use cases
 
-What the advisor is for, from trivial to advanced. Every example is **read-only**:
-the server produces explanations and reviewable code — it never provisions,
-changes, or deletes anything (design D1). Each rung notes the tools it exercises
-and whether credentials are needed.
+What the advisor is for, from trivial to advanced. Every example is read-only:
+the server produces explanations and reviewable code, never a side effect
+(design D1). Each rung notes the tools it uses and whether credentials are
+needed.
 
-1. **Docs lookup — no credentials.**
+1. **Docs lookup, no credentials.**
    *"Search the Exoscale docs for how to create a security group, then show me
    the full security-group reference page."*
-   → `search_docs` + `get_asset_page` (discover slugs first with
-   `list_asset_types`). Works with zero credentials.
+   Uses `search_docs` and `get_asset_page`, with `list_asset_types` to discover
+   slugs first.
 
-2. **A single live query — credentials.**
-   *"What instance types are available in `at-vie-1` right now?"* or *"List the
-   public templates and their default login user."*
-   → one live tool (`list_instance_types` / `list_templates`). `memory_gib` and
-   `size_gib` come pre-derived, so no manual byte math.
+2. **A single live query.**
+   *"What instance types are available in `at-vie-1` right now?"*
+   Uses one live tool such as `list_instance_types` or `list_templates`;
+   `memory_gib` and `size_gib` come pre-derived, so no manual byte math.
 
-3. **Live + docs synthesis — credentials.**
-   *"Compare the instance types in `at-vie-1` and recommend the cheapest one
-   suitable as an SKS worker, citing the sizing constraints."*
-   → a live tool + `get_asset_page` + reasoning. The advisor cites the verified
-   docs; it has no pricing data, so cost questions defer to Exoscale's
-   calculator.
+3. **Live and docs synthesis.**
+   *"Compare the instance types in `at-vie-1` and recommend one suitable as an
+   SKS worker, citing the sizing constraints."*
+   Combines a live tool with `get_asset_page` and reasoning; it has no pricing
+   data, so cost questions defer to Exoscale's calculator.
 
-4. **Multi-asset design, read-only — credentials.**
-   *"Design an HA web-app stack in `at-vie-1` (load balancer + web tier +
-   managed database), cite the docs for each asset, and don't provision
-   anything."*
-   → many `get_asset_page` (+ `list_dbaas_plans`, `list_zones`) with trade-off
-   reasoning. You get a design and citations, never a side effect.
+4. **Multi-asset design, read-only.**
+   *"Design an HA web-app stack in `at-vie-1` (load balancer, web tier, managed
+   database), cite the docs for each asset, and don't provision anything."*
+   Uses many `get_asset_page` calls plus `list_dbaas_plans` and `list_zones`,
+   returning a design and citations rather than a side effect.
 
-5. **Reviewable code generation — credentials.**
+5. **Reviewable code generation.**
    *"Generate an `exoscale-connector` script that provisions the stack above,
-   with secrets side-loaded from the environment — but I'll run it."*
-   → the **advisor, not operator** pattern: read-only advice plus a script
-   *you* review and run. The server stays structurally unable to apply changes.
+   with secrets side-loaded from the environment, and I'll run it."*
+   The advisor-not-operator pattern: read-only advice plus a script you review
+   and run, with the server unable to apply changes itself.
 
-The jump from rung 1 to rung 5 is the whole point: a low-friction, credential-free
-entry for learning, and an aspirational ceiling where the advisor designs and
-writes the infrastructure code while a human keeps the keys and the final apply.
+The ladder is the point: a credential-free entry for learning at rung 1, and a
+ceiling at rung 5 where the advisor writes the infrastructure code while a human
+keeps the keys and the final apply.
 
 ## Admin guide
 

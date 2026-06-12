@@ -60,6 +60,7 @@ kubeconfig
 # repo; they may reference infrastructure or vault details.
 HANDOVER.md
 *.local.md
+*.local.txt
 
 # ─────────────────────────────────────────────────────────────────────────
 # Build / cache / environment — not harmful, just noise.
