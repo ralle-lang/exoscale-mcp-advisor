@@ -6,9 +6,9 @@ connector documentation and run **list-only** live catalogue queries (zones,
 instance types, templates). It is, by construction, incapable of mutating any
 cloud resource.
 
-> **Status: released.** Five tools, the stdio server, and the four-layer test
-> suite (structural no-mutation, mocked-connector, protocol-level, gated live
-> smoke) are in place and green; published to PyPI as
+> **Status: released.** Seven read-only tools, the stdio server, and the
+> four-layer test suite (structural no-mutation, mocked-connector,
+> protocol-level, gated live smoke) are in place and green; published to PyPI as
 > [`exoscale-mcp-advisor`](https://pypi.org/project/exoscale-mcp-advisor/). The
 > full design is in [`docs/mcp-advisor-design.md`](docs/mcp-advisor-design.md);
 > release history is in [`CHANGELOG.md`](CHANGELOG.md).
@@ -29,17 +29,21 @@ while the server remains structurally unable to create, change, or delete
 anything. Infrastructure changes stay the human's job, performed with reviewed,
 idempotent code.
 
-Tool surface (v1, see design §3):
+Tool surface (see design §3):
 
-| Tool | Purpose |
-|------|---------|
-| `search_docs(query)` | Ranked sections from the connector's reference bundle. |
-| `get_asset_page(asset_type)` | Full reference page for one asset type. |
-| `list_zones()` | Live list of zones. |
-| `list_instance_types(zone)` | Live list of instance types. |
-| `list_templates(zone, visibility)` | Live list of templates. |
+| Tool | Credentials | Purpose |
+|------|:-----------:|---------|
+| `search_docs(query)` | — | Ranked sections from the connector's reference bundle. |
+| `get_asset_page(asset_type)` | — | Full reference page for one asset type. |
+| `list_asset_types()` | — | The asset-type index (slug + heading) for discovery. |
+| `list_zones()` | ✔ | Live list of zones. |
+| `list_instance_types(zone)` | ✔ | Live list of instance types (with derived `memory_gib`). |
+| `list_templates(zone, visibility)` | ✔ | Live list of templates (with derived `size_gib`). |
+| `list_dbaas_plans(zone=None)` | ✔ | Live managed-database (DBaaS) service types and plans. |
 
-No mutation tools — ever, by design.
+The three docs tools need no credentials; the four live tools read Exoscale API
+credentials from the server's environment (see the User guide). No mutation
+tools — ever, by design.
 
 ## User guide
 
@@ -57,9 +61,9 @@ exoscale-mcp-advisor            # or: python -m exoscale_mcp_advisor
 ```
 
 It speaks MCP over **stdio**, so it is configured like any other stdio MCP
-server in your client. Live catalogue tools require Exoscale API credentials,
-supplied **via environment variables only** — never on the command line, never
-in a file:
+server in your client. The four live catalogue tools require Exoscale API
+credentials in the **server's launch environment** — never on the command line,
+never read from a file by the app:
 
 ```
 EXOSCALE_API_KEY=...
@@ -67,8 +71,25 @@ EXOSCALE_API_SECRET=...
 EXOSCALE_ZONE=at-vie-1
 ```
 
-Use a **least-privilege, read-only** API key (see the Admin guide). The docs
-tools work with no credentials at all.
+Getting them into the server's environment, two common ways:
+
+```bash
+# 1) Pass them to the MCP client as it launches the server (Claude Code shown):
+claude mcp add exoscale-advisor \
+  -e EXOSCALE_API_KEY=... -e EXOSCALE_API_SECRET=... -e EXOSCALE_ZONE=at-vie-1 \
+  -- uvx exoscale-mcp-advisor
+
+# 2) Inject from a vault at launch, so no secret is typed or stored in config:
+claude mcp add exoscale-advisor -- \
+  infisical run --domain http://localhost:8080 -- uvx exoscale-mcp-advisor
+```
+
+Use a **least-privilege, read-only** API key (see the Admin guide). The three
+docs tools (`search_docs`, `get_asset_page`, `list_asset_types`) need no
+credentials; if the live tools run without credentials they return a clear,
+actionable error while the docs tools keep working. The catalogue exposes **no
+pricing** — use [Exoscale's calculator](https://www.exoscale.com/pricing/) for
+cost estimates.
 
 ## Admin guide
 

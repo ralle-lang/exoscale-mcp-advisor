@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator, Callable, TypeVar
 
 import anyio
-from exoscale_connector.errors import APIError
+from exoscale_connector.errors import APIError, ConfigError
 from mcp.client.session import ClientSession
 from mcp.shared.memory import create_connected_server_and_client_session as connect
 
@@ -180,11 +180,35 @@ def test_invalid_argument_surfaces_as_tool_error() -> None:
     _run(scenario)
 
 
-def test_connector_api_error_surfaces_as_tool_error() -> None:
+def test_auth_api_error_surfaces_a_friendly_credentials_message() -> None:
     async def scenario() -> None:
         async with _session(error=APIError("forbidden", status_code=403)) as session:
             result = await session.call_tool("list_zones", {})
             assert result.isError is True
+            text = result.content[0].text.lower()  # type: ignore[union-attr]
+            assert "credential" in text and "docs tools" in text
+
+    _run(scenario)
+
+
+def test_missing_credentials_surface_a_friendly_message_not_a_traceback() -> None:
+    async def scenario() -> None:
+        async with _session(error=ConfigError("no credentials configured")) as session:
+            result = await session.call_tool("list_instance_types", {"zone": "at-vie-1"})
+            assert result.isError is True
+            text = result.content[0].text.lower()  # type: ignore[union-attr]
+            assert "credential" in text and "docs tools" in text
+
+    _run(scenario)
+
+
+def test_non_auth_api_error_propagates_unchanged() -> None:
+    async def scenario() -> None:
+        async with _session(error=APIError("boom", status_code=500)) as session:
+            result = await session.call_tool("list_zones", {})
+            assert result.isError is True
+            # A genuine server error stays visible — not masked as a creds hint.
+            assert "docs tools" not in result.content[0].text.lower()  # type: ignore[union-attr]
 
     _run(scenario)
 
