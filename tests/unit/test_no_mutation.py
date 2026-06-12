@@ -2,7 +2,7 @@
 
 Read-only is a structural property of this server, not a policy. These tests
 enumerate the tools the server actually registers and fail the build if that set
-is ever anything but the five approved read-only tools, mirroring the connector's
+is ever anything but the approved read-only tools, mirroring the connector's
 artifact-sync "enforcement-point" trick. A future contributor cannot add a
 ``create_instance`` tool without a red test forcing the conversation.
 
@@ -37,13 +37,15 @@ def test_server_registers_exactly_the_read_only_tools() -> None:
     assert _registered_names(srv) == set(READ_ONLY_TOOL_NAMES)
 
 
-def test_approved_set_is_the_five_documented_tools() -> None:
+def test_approved_set_is_the_documented_tools() -> None:
     assert READ_ONLY_TOOL_NAMES == {
         "search_docs",
         "get_asset_page",
+        "list_asset_types",
         "list_zones",
         "list_instance_types",
         "list_templates",
+        "list_dbaas_plans",
     }
 
 

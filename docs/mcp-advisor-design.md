@@ -235,3 +235,49 @@ calls at bootstrap:
 - **`uvx`/PyPI dist name** — defaulting to match the repo name.
 - **Vault init** — whether to run the "init vault" workflow now or defer until
   the live smoke test is actually written.
+
+---
+
+## 14. Addendum — v0.2.0 tool surface
+
+> Added 2026-06-12. Sections 1–13 above are the **founding v1 design** and are
+> kept verbatim as the historical record; this addendum captures how the surface
+> grew in 0.2.0. The design's invariants are unchanged: read-only by
+> construction (§6), zero knowledge duplication (§4), `list`-verb-only live
+> tools (§3). All changes were driven by findings from real-world advisor
+> sessions.
+
+The approved read-only set grew from **five to seven**. The structural
+no-mutation test (§6) was updated consciously at each step — the guard goes red
+until the approved set is changed on purpose — so the §6 guarantee still holds; it
+now asserts "exactly these seven", not "exactly these five".
+
+### New docs tool
+
+| Tool | Signature | Returns |
+|------|-----------|---------|
+| `list_asset_types` | `list_asset_types()` | The asset-type index — each reference page's slug + heading — so valid `asset_type` values are discoverable without probing `get_asset_page` for a miss. |
+
+### New live catalogue tool
+
+| Tool | Signature | Backing connector call |
+|------|-----------|------------------------|
+| `list_dbaas_plans` | `list_dbaas_plans(zone: str \| None = None)` | `DBaaSServiceClient(...).list_service_types(...)` |
+
+`list_service_types` is a read verb, consistent with the §3 "list verb only"
+rule; `zone` is optional because the endpoint is zone-agnostic, validated like
+the other live tools only when supplied.
+
+### Live-tool ergonomics (no surface change)
+
+- **Derived human-readable sizes:** `memory_gib` on instance types and
+  `size_gib` on templates, alongside the raw byte fields (agents were
+  re-deriving GiB by hand).
+- **Credential UX:** missing/invalid credentials (connector `ConfigError`, auth
+  `APIError` 401/403) are translated at the MCP boundary into a clear, actionable
+  message instead of a raw traceback; the docs tools keep working without
+  credentials. The translation lives at the server layer, so the catalogue layer
+  still raises raw and its contract (§6 audit seam) is untouched.
+- **No pricing, stated explicitly:** the server `instructions` now note the
+  catalogue exposes no pricing (use Exoscale's calculator), so agents don't imply
+  a cost.

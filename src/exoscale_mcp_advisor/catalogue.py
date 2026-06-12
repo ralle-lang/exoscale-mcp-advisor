@@ -19,8 +19,9 @@ from typing import Callable
 
 from exoscale_connector import ExoscaleClient
 from exoscale_connector.models import ExoscaleModel
+from exoscale_connector.resources.dbaas import DBaaSServiceClient
 from exoscale_connector.resources.instance_type import InstanceType, InstanceTypeClient
-from exoscale_connector.resources.template import TemplateClient
+from exoscale_connector.resources.template import Template, TemplateClient
 from exoscale_connector.resources.zone import ZoneClient
 
 # Templates accept a visibility filter; only these two values are meaningful.
@@ -39,11 +40,30 @@ def _dump(model: ExoscaleModel) -> dict[str, object]:
     return model.model_dump(mode="json", exclude_none=True)
 
 
+def _gib(num_bytes: int) -> float:
+    """Bytes to GiB, rounded to two decimals (the API reports memory/size in bytes)."""
+    return round(num_bytes / 1024**3, 2)
+
+
 def _dump_instance_type(instance_type: InstanceType) -> dict[str, object]:
-    """Like :func:`_dump` but adds the human ``family.size`` slug for convenience."""
+    """Like :func:`_dump` but adds the ``family.size`` slug and human ``memory_gib``.
+
+    The raw ``memory`` byte count is preserved; ``memory_gib`` is a derived
+    convenience so agents need not re-derive GiB by hand.
+    """
     data = _dump(instance_type)
     if instance_type.family and instance_type.size:
         data["slug"] = instance_type.slug
+    if instance_type.memory is not None:
+        data["memory_gib"] = _gib(instance_type.memory)
+    return data
+
+
+def _dump_template(template: Template) -> dict[str, object]:
+    """Like :func:`_dump` but adds a derived human ``size_gib`` (raw ``size`` kept)."""
+    data = _dump(template)
+    if template.size is not None:
+        data["size_gib"] = _gib(template.size)
     return data
 
 
@@ -100,4 +120,18 @@ class Catalogue:
         templates = TemplateClient(self._client_instance()).list(
             zone=target, visibility=chosen
         )
-        return [_dump(t) for t in templates]
+        return [_dump_template(t) for t in templates]
+
+    def list_dbaas_plans(self, zone: str | None = None) -> list[dict[str, object]]:
+        """List the available DBaaS service types (managed-database plans).
+
+        Wraps the connector's read-only ``DBaaSServiceClient.list_service_types``,
+        which returns the raw, type-specific service-type catalogue (engines and
+        their plans/node specs). ``zone`` is optional — when omitted the server's
+        default zone is used to reach the (zone-agnostic) endpoint; when given it
+        is validated like the other live tools.
+        """
+        target = _require_zone(zone) if zone is not None else None
+        return DBaaSServiceClient(self._client_instance()).list_service_types(
+            zone=target
+        )

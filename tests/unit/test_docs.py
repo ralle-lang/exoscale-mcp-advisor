@@ -68,6 +68,15 @@ def test_asset_types_lists_only_real_pages_not_the_intro() -> None:
     assert _bundle().asset_types == ["dns", "security-group", "zone"]
 
 
+def test_asset_type_index_pairs_each_slug_with_its_heading_sorted() -> None:
+    index = _bundle().asset_type_index()
+    assert index == [
+        {"asset_type": "dns", "heading": "dns (domain + records)"},
+        {"asset_type": "security-group", "heading": "security-group (+ rules)"},
+        {"asset_type": "zone", "heading": "zone"},
+    ]
+
+
 def test_get_asset_page_returns_the_full_page() -> None:
     page = _bundle().get_asset_page("security-group")
     assert page["found"] is True

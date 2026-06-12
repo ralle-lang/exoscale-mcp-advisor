@@ -231,6 +231,18 @@ class DocsBundle:
         """The asset types that have a reference page, sorted."""
         return sorted(self._asset_pages)
 
+    def asset_type_index(self) -> list[dict[str, str]]:
+        """The asset-type index: every reference page's slug and heading, sorted.
+
+        Lets a consumer discover the valid ``asset_type`` values up front (and a
+        human-readable heading for each) instead of probing ``get_asset_page``
+        for a miss to read ``available_asset_types``.
+        """
+        return [
+            {"asset_type": page.asset_type, "heading": page.heading}
+            for page in sorted(self._asset_pages.values(), key=lambda p: p.asset_type)
+        ]
+
     def search(self, query: str, *, limit: int = 5) -> list[dict[str, object]]:
         """Rank bundle sections by keyword overlap with ``query``.
 

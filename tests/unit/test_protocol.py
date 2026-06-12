@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator, Callable, TypeVar
 
 import anyio
-from exoscale_connector.errors import APIError
+from exoscale_connector.errors import APIError, ConfigError
 from mcp.client.session import ClientSession
 from mcp.shared.memory import create_connected_server_and_client_session as connect
 
@@ -31,12 +31,14 @@ _BUNDLE = DocsBundle(
     "### security-group (+ rules)\n\nA security group is a firewall for instances.\n"
 )
 
-_FIVE = {
+_EXPECTED_TOOLS = {
     "search_docs",
     "get_asset_page",
+    "list_asset_types",
     "list_zones",
     "list_instance_types",
     "list_templates",
+    "list_dbaas_plans",
 }
 
 
@@ -55,6 +57,7 @@ class _FakeClient:
                 "instance-types": [{"id": "1", "family": "standard", "size": "tiny"}]
             },
             "template": {"templates": [{"id": "t1", "name": "Ubuntu"}]},
+            "dbaas-service-type": {"dbaas-service-types": [{"name": "pg"}]},
         }.get(path, {})
 
 
@@ -71,12 +74,12 @@ async def _session(error: Exception | None = None) -> AsyncIterator[ClientSessio
         yield session
 
 
-def test_list_tools_exposes_exactly_the_five_read_only_tools() -> None:
+def test_list_tools_exposes_exactly_the_read_only_tools() -> None:
     async def scenario() -> None:
         async with _session() as session:
             result = await session.list_tools()
             names = {tool.name for tool in result.tools}
-            assert names == _FIVE
+            assert names == _EXPECTED_TOOLS
             for tool in result.tools:
                 assert tool.annotations is not None, tool.name
                 assert tool.annotations.readOnlyHint is True, tool.name
@@ -94,8 +97,21 @@ def test_tool_input_schemas_declare_their_parameters() -> None:
             assert "zone" in tools["list_instance_types"].inputSchema["properties"]
             tpl_props = tools["list_templates"].inputSchema["properties"]
             assert "zone" in tpl_props and "visibility" in tpl_props
-            # list_zones takes no arguments.
+            # list_zones and list_asset_types take no arguments.
             assert tools["list_zones"].inputSchema.get("properties", {}) == {}
+            assert tools["list_asset_types"].inputSchema.get("properties", {}) == {}
+
+    _run(scenario)
+
+
+def test_list_asset_types_call_returns_the_index() -> None:
+    async def scenario() -> None:
+        async with _session() as session:
+            result = await session.call_tool("list_asset_types", {})
+            assert result.isError is False
+            payload = result.structuredContent["result"]
+            slugs = {row["asset_type"] for row in payload}
+            assert {"zone", "security-group"} <= slugs
 
     _run(scenario)
 
@@ -149,6 +165,8 @@ def test_live_tools_return_catalogue_data() -> None:
                 "list_templates", {"zone": "at-vie-1", "visibility": "public"}
             )
             assert templates.structuredContent["result"][0]["name"] == "Ubuntu"
+            plans = await session.call_tool("list_dbaas_plans", {})
+            assert plans.structuredContent["result"][0]["name"] == "pg"
 
     _run(scenario)
 
@@ -162,11 +180,35 @@ def test_invalid_argument_surfaces_as_tool_error() -> None:
     _run(scenario)
 
 
-def test_connector_api_error_surfaces_as_tool_error() -> None:
+def test_auth_api_error_surfaces_a_friendly_credentials_message() -> None:
     async def scenario() -> None:
         async with _session(error=APIError("forbidden", status_code=403)) as session:
             result = await session.call_tool("list_zones", {})
             assert result.isError is True
+            text = result.content[0].text.lower()  # type: ignore[union-attr]
+            assert "credential" in text and "docs tools" in text
+
+    _run(scenario)
+
+
+def test_missing_credentials_surface_a_friendly_message_not_a_traceback() -> None:
+    async def scenario() -> None:
+        async with _session(error=ConfigError("no credentials configured")) as session:
+            result = await session.call_tool("list_instance_types", {"zone": "at-vie-1"})
+            assert result.isError is True
+            text = result.content[0].text.lower()  # type: ignore[union-attr]
+            assert "credential" in text and "docs tools" in text
+
+    _run(scenario)
+
+
+def test_non_auth_api_error_propagates_unchanged() -> None:
+    async def scenario() -> None:
+        async with _session(error=APIError("boom", status_code=500)) as session:
+            result = await session.call_tool("list_zones", {})
+            assert result.isError is True
+            # A genuine server error stays visible — not masked as a creds hint.
+            assert "docs tools" not in result.content[0].text.lower()  # type: ignore[union-attr]
 
     _run(scenario)
 

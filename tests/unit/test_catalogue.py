@@ -59,7 +59,13 @@ def test_list_instance_types_targets_the_requested_zone_and_adds_slug() -> None:
         {
             "instance-type": {
                 "instance-types": [
-                    {"id": "1", "family": "standard", "size": "tiny", "cpus": 1},
+                    {
+                        "id": "1",
+                        "family": "standard",
+                        "size": "tiny",
+                        "cpus": 1,
+                        "memory": 2 * 1024**3,
+                    },
                     {"id": "2", "family": "gpu", "size": "small"},
                 ]
             }
@@ -68,6 +74,11 @@ def test_list_instance_types_targets_the_requested_zone_and_adds_slug() -> None:
     types = _catalogue(client).list_instance_types("at-vie-1")
     assert types[0]["slug"] == "standard.tiny"
     assert types[1]["slug"] == "gpu.small"
+    # Raw bytes are preserved and a human-readable GiB is derived alongside.
+    assert types[0]["memory"] == 2 * 1024**3
+    assert types[0]["memory_gib"] == 2.0
+    # No memory field → no derived field (rather than a misleading 0).
+    assert "memory_gib" not in types[1]
     # The zone must be threaded to the per-call API host, not the client default.
     assert client.calls == [("instance-type", "at-vie-1", None)]
 
@@ -88,6 +99,15 @@ def test_list_templates_defaults_to_public_visibility() -> None:
     templates = _catalogue(client).list_templates("at-vie-1")
     assert templates == [{"id": "t1", "name": "Ubuntu"}]
     assert client.calls == [("template", "at-vie-1", {"visibility": "public"})]
+
+
+def test_list_templates_derives_size_gib_keeping_raw_size() -> None:
+    client = FakeClient(
+        {"template": {"templates": [{"id": "t1", "name": "Ubuntu", "size": 10 * 1024**3}]}}
+    )
+    template = _catalogue(client).list_templates("at-vie-1")[0]
+    assert template["size"] == 10 * 1024**3
+    assert template["size_gib"] == 10.0
 
 
 def test_list_templates_passes_private_visibility() -> None:
@@ -113,6 +133,32 @@ def test_list_templates_rejects_empty_zone() -> None:
     client = FakeClient()
     with pytest.raises(ValueError, match="zone"):
         _catalogue(client).list_templates("")
+
+
+# --------------------------------------------------------------------------- #
+# list_dbaas_plans
+# --------------------------------------------------------------------------- #
+def test_list_dbaas_plans_hits_the_service_type_endpoint() -> None:
+    client = FakeClient(
+        {"dbaas-service-type": {"dbaas-service-types": [{"name": "pg"}, {"name": "mysql"}]}}
+    )
+    plans = _catalogue(client).list_dbaas_plans()
+    assert plans == [{"name": "pg"}, {"name": "mysql"}]
+    # zone omitted → no per-call zone override.
+    assert client.calls == [("dbaas-service-type", None, None)]
+
+
+def test_list_dbaas_plans_threads_an_explicit_zone() -> None:
+    client = FakeClient({"dbaas-service-type": {"dbaas-service-types": []}})
+    _catalogue(client).list_dbaas_plans("at-vie-1")
+    assert client.calls == [("dbaas-service-type", "at-vie-1", None)]
+
+
+def test_list_dbaas_plans_rejects_a_blank_zone_when_given() -> None:
+    client = FakeClient()
+    with pytest.raises(ValueError, match="zone"):
+        _catalogue(client).list_dbaas_plans("   ")
+    assert client.calls == []
 
 
 # --------------------------------------------------------------------------- #
