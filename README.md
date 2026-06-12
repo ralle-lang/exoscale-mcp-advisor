@@ -3,8 +3,8 @@
 A **read-only** [Model Context Protocol](https://modelcontextprotocol.io) server
 that lets an MCP-capable agent learn about Exoscale: search the verified
 connector documentation and run **list-only** live catalogue queries (zones,
-instance types, templates). It is, by construction, incapable of mutating any
-cloud resource.
+instance types, templates, managed-database plans, SKS versions). It is, by
+construction, incapable of mutating any cloud resource.
 
 > **Status: released.** Eight read-only tools, the stdio server, and the
 > four-layer test suite (structural no-mutation, mocked-connector,
