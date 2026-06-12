@@ -19,6 +19,7 @@ from typing import Callable
 
 from exoscale_connector import ExoscaleClient
 from exoscale_connector.models import ExoscaleModel
+from exoscale_connector.resources.dbaas import DBaaSServiceClient
 from exoscale_connector.resources.instance_type import InstanceType, InstanceTypeClient
 from exoscale_connector.resources.template import TemplateClient
 from exoscale_connector.resources.zone import ZoneClient
@@ -101,3 +102,17 @@ class Catalogue:
             zone=target, visibility=chosen
         )
         return [_dump(t) for t in templates]
+
+    def list_dbaas_plans(self, zone: str | None = None) -> list[dict[str, object]]:
+        """List the available DBaaS service types (managed-database plans).
+
+        Wraps the connector's read-only ``DBaaSServiceClient.list_service_types``,
+        which returns the raw, type-specific service-type catalogue (engines and
+        their plans/node specs). ``zone`` is optional — when omitted the server's
+        default zone is used to reach the (zone-agnostic) endpoint; when given it
+        is validated like the other live tools.
+        """
+        target = _require_zone(zone) if zone is not None else None
+        return DBaaSServiceClient(self._client_instance()).list_service_types(
+            zone=target
+        )

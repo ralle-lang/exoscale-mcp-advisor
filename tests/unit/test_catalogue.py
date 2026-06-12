@@ -116,6 +116,32 @@ def test_list_templates_rejects_empty_zone() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# list_dbaas_plans
+# --------------------------------------------------------------------------- #
+def test_list_dbaas_plans_hits_the_service_type_endpoint() -> None:
+    client = FakeClient(
+        {"dbaas-service-type": {"dbaas-service-types": [{"name": "pg"}, {"name": "mysql"}]}}
+    )
+    plans = _catalogue(client).list_dbaas_plans()
+    assert plans == [{"name": "pg"}, {"name": "mysql"}]
+    # zone omitted → no per-call zone override.
+    assert client.calls == [("dbaas-service-type", None, None)]
+
+
+def test_list_dbaas_plans_threads_an_explicit_zone() -> None:
+    client = FakeClient({"dbaas-service-type": {"dbaas-service-types": []}})
+    _catalogue(client).list_dbaas_plans("at-vie-1")
+    assert client.calls == [("dbaas-service-type", "at-vie-1", None)]
+
+
+def test_list_dbaas_plans_rejects_a_blank_zone_when_given() -> None:
+    client = FakeClient()
+    with pytest.raises(ValueError, match="zone"):
+        _catalogue(client).list_dbaas_plans("   ")
+    assert client.calls == []
+
+
+# --------------------------------------------------------------------------- #
 # Error propagation — the tools surface connector errors rather than swallowing.
 # --------------------------------------------------------------------------- #
 def test_api_errors_propagate() -> None:

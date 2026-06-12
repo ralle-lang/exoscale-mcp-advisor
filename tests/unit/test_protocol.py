@@ -38,6 +38,7 @@ _EXPECTED_TOOLS = {
     "list_zones",
     "list_instance_types",
     "list_templates",
+    "list_dbaas_plans",
 }
 
 
@@ -56,6 +57,7 @@ class _FakeClient:
                 "instance-types": [{"id": "1", "family": "standard", "size": "tiny"}]
             },
             "template": {"templates": [{"id": "t1", "name": "Ubuntu"}]},
+            "dbaas-service-type": {"dbaas-service-types": [{"name": "pg"}]},
         }.get(path, {})
 
 
@@ -163,6 +165,8 @@ def test_live_tools_return_catalogue_data() -> None:
                 "list_templates", {"zone": "at-vie-1", "visibility": "public"}
             )
             assert templates.structuredContent["result"][0]["name"] == "Ubuntu"
+            plans = await session.call_tool("list_dbaas_plans", {})
+            assert plans.structuredContent["result"][0]["name"] == "pg"
 
     _run(scenario)
 

@@ -45,6 +45,7 @@ def test_approved_set_is_the_documented_tools() -> None:
         "list_zones",
         "list_instance_types",
         "list_templates",
+        "list_dbaas_plans",
     }
 
 

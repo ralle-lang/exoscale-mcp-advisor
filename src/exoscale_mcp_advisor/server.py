@@ -33,6 +33,7 @@ READ_ONLY_TOOL_NAMES = frozenset(
         "list_zones",
         "list_instance_types",
         "list_templates",
+        "list_dbaas_plans",
     }
 )
 
@@ -119,6 +120,16 @@ def build_server(
         ``"public"`` (Exoscale stock images, default) or ``"private"``.
         """
         return cat.list_templates(zone, visibility)
+
+    @mcp.tool(name="list_dbaas_plans", annotations=_LIVE_ANNOTATIONS)
+    def list_dbaas_plans(zone: str | None = None) -> list[dict[str, object]]:
+        """List the managed-database (DBaaS) service types and their plans (live).
+
+        ``zone`` is optional — when omitted the server's default zone is used.
+        Returns the raw service-type catalogue: each database engine with its
+        available plans and node specifications.
+        """
+        return cat.list_dbaas_plans(zone)
 
     return mcp
 
