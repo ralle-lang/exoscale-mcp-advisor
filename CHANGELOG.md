@@ -4,6 +4,34 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+_No version or date assigned yet — this section accumulates merged changes for the
+next release, which is a later manual step._
+
+### Added
+
+- **Stability & compatibility policy** (design §16, linked from the README):
+  defines the public API as the tool surface (tool names + their contracts),
+  everything else as internal, what `0.x` version bumps mean, the
+  `exoscale-connector` floor guarantee, and a deprecate-then-remove procedure. It
+  leans on the existing doc-parsing test rather than a parallel tool list (#15).
+
+### Changed
+
+- **Publishing moved to PyPI Trusted Publishing (OIDC).** Releases now publish on
+  a published GitHub Release via OIDC with no stored API token, and attach PEP 740
+  build attestations (provenance). The tag → Release → publish flow is documented
+  in the README (#13).
+- **CI tests the dependency floor.** The suite now runs against both the declared
+  `exoscale-connector` floor (parsed from `pyproject.toml`, not duplicated) and the
+  latest release, so a floor set too low fails the build (#15).
+
+### Security
+
+- **All GitHub Actions are pinned to commit SHAs** across every workflow (CI,
+  release, live-smoke), replacing mutable tag and branch refs (#13).
+
 ## [0.3.0] — 2026-06-12
 
 Adds an eighth read-only tool surfacing live SKS Kubernetes versions, and makes
@@ -28,6 +56,7 @@ construction.
   forward-pointer from §3; README documents the new tool and its wording was
   tightened.
 
+[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.3.0
 
 ## [0.2.0] — 2026-06-12

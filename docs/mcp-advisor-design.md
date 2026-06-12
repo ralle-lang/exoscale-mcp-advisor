@@ -1,14 +1,18 @@
 # Design — read-only advisor MCP server
 
-> **Status:** design proposal (issue #7, Advisor milestone, rung 3).
-> This document is reviewed in the connector repo, then copied to the new
-> `exoscale-mcp-advisor` repository as its founding design document.
-> Implementation is tracked by issues in that new repo, not here.
+> **Status:** implemented — living record. The `exoscale-mcp-advisor` repository
+> exists and has shipped (see [`CHANGELOG.md`](../CHANGELOG.md)); this is its
+> founding design document, now maintained as a living record. **Sections 1–13
+> are preserved verbatim as the original design proposal (historical):** their
+> future tense and "issue #7" framing describe the pre-implementation plan and are
+> kept as written. The per-release addenda (§14 onward) are the living record of
+> how the surface and policy actually evolved, and the doc-parsing test (§6) keeps
+> the documented tool surface mechanically in sync with the code.
 
-This is a design + bootstrap-decision document. It settles *what* the server
-is and *how* it is built before any code is written, so the structural
-guarantees (read-only by construction, zero knowledge duplication) are
-designed in rather than bolted on.
+This document settled *what* the server is and *how* it would be built before the
+code was written, so the structural guarantees (read-only by construction, zero
+knowledge duplication) were designed in rather than bolted on. It is preserved
+below as written, with every later change captured in the addenda.
 
 ---
 
@@ -256,8 +260,10 @@ calls at bootstrap:
 
 The approved read-only set grew from **five to seven**. The structural
 no-mutation test (§6) was updated consciously at each step — the guard goes red
-until the approved set is changed on purpose — so the §6 guarantee still holds; it
-now asserts "exactly these seven", not "exactly these five".
+until the approved set is changed on purpose — so the §6 guarantee still holds; at
+0.2.0 it asserted "exactly these seven", not "exactly these five". (The current
+count is not restated here — §15 took it to eight, and the doc-parsing test keeps
+the live count honest.)
 
 ### New docs tool
 
