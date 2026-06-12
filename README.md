@@ -189,6 +189,22 @@ construction guarantee, and the four-layer test strategy. Conventional commits;
 keep this README current with behavior changes in the same commit; no untested
 code lands.
 
+**Releasing.** The version is single-sourced from `__version__` in
+`src/exoscale_mcp_advisor/__init__.py`. There is **no credential to manage** —
+publishing uses PyPI **Trusted Publishing (OIDC)**, so no API token is stored or
+rotated. To cut a release:
+
+1. Bump `__version__` and add a `CHANGELOG.md` entry; merge to `main`.
+2. Create a **GitHub Release** with tag `vX.Y.Z` (matching the version).
+3. Publishing the Release triggers
+   [`.github/workflows/release.yml`](.github/workflows/release.yml), which builds
+   the sdist + wheel, runs `twine check`, and uploads to PyPI via OIDC with
+   **PEP 740 build attestations** attached.
+
+The PyPI trusted publisher is bound to owner `ralle-lang`, repo
+`exoscale-mcp-advisor`, workflow `release.yml`, and the `pypi` environment; every
+action in all workflows is pinned to a commit SHA.
+
 ---
 
 ## License
