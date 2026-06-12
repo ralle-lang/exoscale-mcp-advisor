@@ -31,9 +31,10 @@ _BUNDLE = DocsBundle(
     "### security-group (+ rules)\n\nA security group is a firewall for instances.\n"
 )
 
-_FIVE = {
+_EXPECTED_TOOLS = {
     "search_docs",
     "get_asset_page",
+    "list_asset_types",
     "list_zones",
     "list_instance_types",
     "list_templates",
@@ -71,12 +72,12 @@ async def _session(error: Exception | None = None) -> AsyncIterator[ClientSessio
         yield session
 
 
-def test_list_tools_exposes_exactly_the_five_read_only_tools() -> None:
+def test_list_tools_exposes_exactly_the_read_only_tools() -> None:
     async def scenario() -> None:
         async with _session() as session:
             result = await session.list_tools()
             names = {tool.name for tool in result.tools}
-            assert names == _FIVE
+            assert names == _EXPECTED_TOOLS
             for tool in result.tools:
                 assert tool.annotations is not None, tool.name
                 assert tool.annotations.readOnlyHint is True, tool.name
@@ -94,8 +95,21 @@ def test_tool_input_schemas_declare_their_parameters() -> None:
             assert "zone" in tools["list_instance_types"].inputSchema["properties"]
             tpl_props = tools["list_templates"].inputSchema["properties"]
             assert "zone" in tpl_props and "visibility" in tpl_props
-            # list_zones takes no arguments.
+            # list_zones and list_asset_types take no arguments.
             assert tools["list_zones"].inputSchema.get("properties", {}) == {}
+            assert tools["list_asset_types"].inputSchema.get("properties", {}) == {}
+
+    _run(scenario)
+
+
+def test_list_asset_types_call_returns_the_index() -> None:
+    async def scenario() -> None:
+        async with _session() as session:
+            result = await session.call_tool("list_asset_types", {})
+            assert result.isError is False
+            payload = result.structuredContent["result"]
+            slugs = {row["asset_type"] for row in payload}
+            assert {"zone", "security-group"} <= slugs
 
     _run(scenario)
 

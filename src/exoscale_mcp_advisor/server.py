@@ -1,9 +1,9 @@
-"""MCP server wiring — registers the five read-only tools over stdio (design §8).
+"""MCP server wiring — registers the read-only tool set over stdio (design §8).
 
 This module is the single place tools are registered. The set is deliberately
 small and auditable; the structural no-mutation test (design §6) enumerates the
-tools built here and fails the build if the set is ever anything but the five
-read-only tools below. Every tool is annotated ``readOnlyHint=True`` /
+tools built here and fails the build if the set is ever anything but the
+approved read-only tools below. Every tool is annotated ``readOnlyHint=True`` /
 ``destructiveHint=False`` so MCP clients also see the guarantee.
 
 ``build_server`` accepts an injected :class:`~exoscale_mcp_advisor.catalogue.Catalogue`
@@ -29,6 +29,7 @@ READ_ONLY_TOOL_NAMES = frozenset(
     {
         "search_docs",
         "get_asset_page",
+        "list_asset_types",
         "list_zones",
         "list_instance_types",
         "list_templates",
@@ -84,6 +85,16 @@ def build_server(
         result lists the available asset types.
         """
         return docs.get_asset_page(asset_type)
+
+    @mcp.tool(name="list_asset_types", annotations=_DOCS_ANNOTATIONS)
+    def list_asset_types() -> list[dict[str, str]]:
+        """List the Exoscale asset types that have a reference page.
+
+        Returns each asset type's slug — pass one to ``get_asset_page`` — and its
+        page heading. Call this first to discover the valid ``asset_type`` values
+        instead of guessing a slug.
+        """
+        return docs.asset_type_index()
 
     @mcp.tool(name="list_zones", annotations=_LIVE_ANNOTATIONS)
     def list_zones() -> list[dict[str, object]]:
