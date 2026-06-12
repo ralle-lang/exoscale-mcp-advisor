@@ -6,8 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-_No version or date assigned yet — this section accumulates merged changes for the
-next release, which is a later manual step._
+## [0.4.0] — 2026-06-12
+
+A maintenance and supply-chain hardening release: the eight-tool read-only
+surface is unchanged. Adds a published stability policy, moves publishing to PyPI
+Trusted Publishing with build attestations, SHA-pins every CI action, tests
+against the dependency floor, and ships on the hardened `exoscale-connector`
+0.5.0.
 
 ### Added
 
@@ -19,6 +24,9 @@ next release, which is a later manual step._
 
 ### Changed
 
+- **Connector floor raised to `>=0.5.0`** — the live `list` tools now run on the
+  connector's 0.5.0 HTTP resilience hardening (connection-level retries on
+  idempotent requests). No advisor API changed; the tool surface is unchanged.
 - **Publishing moved to PyPI Trusted Publishing (OIDC).** Releases now publish on
   a published GitHub Release via OIDC with no stored API token, and attach PEP 740
   build attestations (provenance). The tag → Release → publish flow is documented
@@ -56,7 +64,8 @@ construction.
   forward-pointer from §3; README documents the new tool and its wording was
   tightened.
 
-[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.4.0
 [0.3.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.3.0
 
 ## [0.2.0] — 2026-06-12
