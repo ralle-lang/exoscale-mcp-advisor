@@ -39,18 +39,21 @@ READ_ONLY_TOOL_NAMES = frozenset(
         "list_instance_types",
         "list_templates",
         "list_dbaas_plans",
+        "list_sks_versions",
     }
 )
 
 _INSTRUCTIONS = (
     "Read-only Exoscale advisor. Search the connector's verified documentation "
     "and run list-only live catalogue queries (zones, instance types, templates, "
-    "managed-database plans). This server cannot create, change, or delete any "
+    "managed-database plans, SKS Kubernetes versions). This server cannot create, "
+    "change, or delete any "
     "cloud resource — infrastructure changes remain the human's job, performed "
     "with reviewed connector code.\n\n"
     "Credentials: the docs tools (search_docs, get_asset_page, list_asset_types) "
     "need none. The live tools (list_zones, list_instance_types, list_templates, "
-    "list_dbaas_plans) need EXOSCALE_API_KEY, EXOSCALE_API_SECRET and "
+    "list_dbaas_plans, list_sks_versions) need EXOSCALE_API_KEY, "
+    "EXOSCALE_API_SECRET and "
     "EXOSCALE_ZONE in the server's environment; without them they return a clear "
     "error while the docs tools keep working. Use a least-privilege, read-only "
     "key.\n\n"
@@ -172,6 +175,17 @@ def build_server(
         available plans and node specifications.
         """
         return _live_call(lambda: cat.list_dbaas_plans(zone))
+
+    @mcp.tool(name="list_sks_versions", annotations=_LIVE_ANNOTATIONS)
+    def list_sks_versions(zone: str | None = None) -> list[str]:
+        """List the Kubernetes versions a new SKS cluster may be created with (live).
+
+        ``zone`` is optional — when omitted the server's default zone is used.
+        Returns raw version strings, newest-first (e.g. ``["1.31.0", "1.30.4"]``);
+        ground a cluster's ``version`` against this live list rather than
+        hardcoding a literal that can be retired upstream.
+        """
+        return _live_call(lambda: cat.list_sks_versions(zone))
 
     return mcp
 

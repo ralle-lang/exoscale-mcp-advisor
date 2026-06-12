@@ -1,9 +1,11 @@
 """Live catalogue tools — read-only, ``list`` verb only.
 
-Three thin wrappers over the connector's read-only catalogue clients (design §3):
+Thin wrappers over the connector's read-only catalogue clients (design §3):
 ``list_zones`` → ``ZoneClient.list()``, ``list_instance_types`` →
-``InstanceTypeClient.list()``, ``list_templates`` → ``TemplateClient.list()``.
-Every tool calls a connector ``list()`` and nothing else — no ``get`` / ``create``
+``InstanceTypeClient.list()``, ``list_templates`` → ``TemplateClient.list()``,
+``list_dbaas_plans`` → ``DBaaSServiceClient.list_service_types()``,
+``list_sks_versions`` → ``SksClusterClient.list_versions()``. Every tool calls a
+connector read-only ``list*`` method and nothing else — no ``get`` / ``create``
 / ``update`` / ``delete``. This is layer one of the read-only guarantee: the code
 literally cannot mutate (design §6).
 
@@ -21,6 +23,7 @@ from exoscale_connector import ExoscaleClient
 from exoscale_connector.models import ExoscaleModel
 from exoscale_connector.resources.dbaas import DBaaSServiceClient
 from exoscale_connector.resources.instance_type import InstanceType, InstanceTypeClient
+from exoscale_connector.resources.sks import SksClusterClient
 from exoscale_connector.resources.template import Template, TemplateClient
 from exoscale_connector.resources.zone import ZoneClient
 
@@ -135,3 +138,17 @@ class Catalogue:
         return DBaaSServiceClient(self._client_instance()).list_service_types(
             zone=target
         )
+
+    def list_sks_versions(self, zone: str | None = None) -> list[str]:
+        """List the Kubernetes versions a new SKS cluster may be created with.
+
+        Wraps the connector's read-only ``SksClusterClient.list_versions``
+        (``GET /sks-cluster-version``). Returns raw version strings, newest-first
+        as the API orders them (e.g. ``["1.31.0", "1.30.4", ...]``) — ground a
+        cluster's ``version`` against this list rather than hardcoding a literal
+        like ``"1.30"`` that can be retired upstream. ``zone`` is optional — when
+        omitted the server's default zone reaches the (zone-agnostic) endpoint;
+        when given it is validated like the other live tools.
+        """
+        target = _require_zone(zone) if zone is not None else None
+        return SksClusterClient(self._client_instance()).list_versions(zone=target)

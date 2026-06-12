@@ -4,6 +4,32 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-06-12
+
+Adds an eighth read-only tool surfacing live SKS Kubernetes versions, and makes
+the design doc a mechanical record of the tool surface. Still read-only by
+construction.
+
+### Added
+
+- `list_sks_versions(zone=None)` — live list of the Kubernetes versions a new SKS
+  cluster may be created with, wrapping the connector's read-only
+  `SksClusterClient.list_versions`. Lets an agent ground a cluster's `version`
+  against what the API accepts instead of hardcoding a literal (#9).
+- A structural test that parses the design doc's tool tables and asserts their
+  union equals the registered tool set, so undocumented tool additions (or stale
+  tables) fail the build.
+
+### Changed
+
+- Bumped the `exoscale-connector` floor to `>=0.4.0`, the release that first
+  exposes `SksClusterClient.list_versions` (#9).
+- Design doc records the post-v1 surface in per-release addenda (§14, §15) with a
+  forward-pointer from §3; README documents the new tool and its wording was
+  tightened.
+
+[0.3.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.3.0
+
 ## [0.2.0] — 2026-06-12
 
 Grows the read-only tool surface from five to seven and smooths the live-tool

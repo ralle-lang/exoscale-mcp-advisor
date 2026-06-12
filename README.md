@@ -6,7 +6,7 @@ connector documentation and run **list-only** live catalogue queries (zones,
 instance types, templates). It is, by construction, incapable of mutating any
 cloud resource.
 
-> **Status: released.** Seven read-only tools, the stdio server, and the
+> **Status: released.** Eight read-only tools, the stdio server, and the
 > four-layer test suite (structural no-mutation, mocked-connector,
 > protocol-level, gated live smoke) are in place and green; published to PyPI as
 > [`exoscale-mcp-advisor`](https://pypi.org/project/exoscale-mcp-advisor/). The
@@ -40,8 +40,9 @@ Tool surface (see design §3):
 | `list_instance_types(zone)` | ✔ | Live list of instance types (with derived `memory_gib`). |
 | `list_templates(zone, visibility)` | ✔ | Live list of templates (with derived `size_gib`). |
 | `list_dbaas_plans(zone=None)` | ✔ | Live managed-database (DBaaS) service types and plans. |
+| `list_sks_versions(zone=None)` | ✔ | Live list of Kubernetes versions a new SKS cluster may use. |
 
-The three docs tools need no credentials; the four live tools read Exoscale API
+The three docs tools need no credentials; the five live tools read Exoscale API
 credentials from the server's environment (see the User guide). No mutation
 tools — ever, by design.
 
@@ -61,7 +62,7 @@ exoscale-mcp-advisor            # or: python -m exoscale_mcp_advisor
 ```
 
 It speaks MCP over **stdio**, so it is configured like any other stdio MCP
-server in your client. The four live catalogue tools require Exoscale API
+server in your client. The five live catalogue tools require Exoscale API
 credentials in the **server's launch environment** — never on the command line,
 never read from a file by the app:
 

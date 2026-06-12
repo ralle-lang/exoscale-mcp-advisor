@@ -42,6 +42,13 @@ def test_live_list_public_templates_present(live_zone: str) -> None:
     assert all(t.get("visibility") in (None, "public") for t in templates)
 
 
+def test_live_list_sks_versions_are_well_formed(live_zone: str) -> None:
+    versions = Catalogue().list_sks_versions(live_zone)
+    assert versions, "expected at least one SKS version"
+    # Raw version strings, each starting with a major.minor digit (e.g. "1.30").
+    assert all(isinstance(v, str) and v[:1].isdigit() for v in versions)
+
+
 def test_live_through_mcp_server(live_zone: str) -> None:
     """One end-to-end pass: drive the real catalogue through the MCP server."""
 
