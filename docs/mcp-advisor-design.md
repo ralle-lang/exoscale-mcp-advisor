@@ -319,3 +319,41 @@ endpoint is zone-agnostic, validated like the other live tools only when supplie
 It requires `exoscale-connector>=0.4.0`, the release that first exposes
 `SksClusterClient.list_versions` (previously only a test fixture resolved SKS
 versions, so the connector's public API could not surface them).
+
+## 16. Stability & compatibility policy
+
+> Added 2026-06-12. This is the single source for what "compatible" means; the
+> README points here. It introduces no new tool tables, so the doc-parsing guard
+> (§6) is unaffected.
+
+This project is pre-1.0 and follows [SemVer](https://semver.org/) with the 0.x
+convention.
+
+- **Public API = the tool surface.** The public contract is the set of registered
+  MCP tools — their **names** and their **call contracts** (parameters, what each
+  parameter means, and the documented shape each tool returns). That set lives in
+  exactly one place, `READ_ONLY_TOOL_NAMES` in `server.py`, and is kept in lockstep
+  with the tool tables in §3 / §14 / §15 by
+  `test_design_doc_tool_tables_match_the_approved_set` (§6). There is no second,
+  hand-maintained list to drift.
+- **Everything else is internal** and may change in any release: module layout,
+  helper functions, the `Catalogue` and `DocsBundle` classes, search-ranking
+  internals, the exact wording of error messages, and which `exoscale-connector`
+  method backs a given tool.
+- **What a version bump means:**
+  - **PATCH** (`0.4.x`): bug fixes only — no tool added or removed, no breaking
+    change to an existing tool's contract.
+  - **MINOR** (`0.x.0`): may add a tool, make a breaking change to an existing
+    tool's name or contract, or raise the `exoscale-connector` floor. Pin the
+    version if you depend on a specific surface. Pre-1.0 there is **no guarantee
+    that minors are free of breaking changes** — that guarantee begins at 1.0.
+- **Dependency floor.** The `exoscale-connector` lower bound declared in
+  `pyproject.toml` is the single source of truth for the minimum supported
+  connector. CI installs and runs the suite against **both** that floor and the
+  latest connector (the floor is parsed out of `pyproject.toml`, not duplicated),
+  so a floor set too low fails the build mechanically rather than silently.
+- **Deprecation procedure.** A tool, or a tool parameter, is removed only after:
+  (1) it is marked deprecated in its docstring and in the relevant tool table
+  here, in a release where it still works; (2) the deprecation is recorded in
+  `CHANGELOG.md`; (3) removal lands no earlier than the next MINOR after the one
+  that announced it. A rename is a deprecate-then-remove, never an in-place change.

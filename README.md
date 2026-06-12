@@ -189,6 +189,12 @@ construction guarantee, and the four-layer test strategy. Conventional commits;
 keep this README current with behavior changes in the same commit; no untested
 code lands.
 
+**Stability & compatibility.** The public API is the **tool surface** (tool names
+and their contracts) — everything else is internal and may change. Pre-1.0,
+minor versions may introduce breaking changes. The full policy, including the
+deprecation procedure and the `exoscale-connector` floor guarantee, is
+[design §16](docs/mcp-advisor-design.md#16-stability--compatibility-policy).
+
 **Releasing.** The version is single-sourced from `__version__` in
 `src/exoscale_mcp_advisor/__init__.py`. There is **no credential to manage** —
 publishing uses PyPI **Trusted Publishing (OIDC)**, so no API token is stored or
