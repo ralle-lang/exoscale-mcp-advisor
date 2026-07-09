@@ -62,6 +62,10 @@ HANDOVER.md
 *.local.md
 *.local.txt
 
+# Claude Code per-user local settings (permission grants etc.) — personal, never
+# committed. The shared skills under .claude/skills/ ARE tracked.
+.claude/settings.local.json
+
 # ─────────────────────────────────────────────────────────────────────────
 # Build / cache / environment — not harmful, just noise.
 # ─────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,99 @@
+name: Connector release watch
+
+# Weekly supply-chain check: does the upstream exoscale-connector have a release
+# newer than the floor this advisor pins? If so, open a triage issue so a human
+# (or Claude, via .claude/skills/connector-release-triage) assesses what the
+# advisor needs to adopt — the same judgement done by hand for the 0.6.0 bump.
+# Detection is mechanical and lives here; the triage itself needs judgement and
+# lives in the skill.
+
+on:
+  schedule:
+    # Mondays 06:00 UTC — early in the week so a new release is triaged promptly.
+    - cron: "0 6 * * 1"
+  # Allow an on-demand run from the Actions tab (e.g. to test or force a check).
+  workflow_dispatch:
+
+# Least privilege: read the repo to parse the floor, write issues to file triage.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      # The upstream connector whose releases gate the advisor's knowledge/floor.
+      UPSTREAM: ralle-lang/exoscale-python-connector
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
+
+      - name: Open a triage issue when upstream is newer than our floor
+        run: |
+          set -euo pipefail
+
+          # Current pinned floor — single source of truth is pyproject.toml, parsed
+          # with the same expression CI uses so the two never drift (see ci.yml).
+          floor=$(grep -oE '"exoscale-connector>=[0-9]+(\.[0-9]+)+' pyproject.toml \
+            | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)
+          test -n "$floor" || { echo "::error::could not parse exoscale-connector floor from pyproject.toml"; exit 1; }
+
+          # Latest published (non-prerelease) upstream release; strip a leading 'v'.
+          latest_tag=$(gh release view --repo "$UPSTREAM" --json tagName --jq .tagName)
+          latest=${latest_tag#v}
+          echo "advisor floor: $floor | upstream latest: $latest ($latest_tag)"
+
+          # Act only when latest is STRICTLY newer than the floor (sort -V decides).
+          if [ "$latest" = "$floor" ] || \
+             [ "$(printf '%s\n%s\n' "$floor" "$latest" | sort -V | tail -1)" = "$floor" ]; then
+            echo "No upstream release newer than the pinned floor ($floor). Nothing to do."
+            exit 0
+          fi
+
+          # Idempotency: don't re-open if an open triage issue for this tag exists.
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --label connector-release --search "$latest_tag in:title" --json number --jq 'length')
+          if [ "$existing" != "0" ]; then
+            echo "An open triage issue for $latest_tag already exists. Nothing to do."
+            exit 0
+          fi
+
+          # Ensure the tracking label exists (no-op if it already does).
+          gh label create connector-release \
+            --repo "$GITHUB_REPOSITORY" \
+            --color 1d76db \
+            --description "Upstream exoscale-connector release awaiting triage" \
+            --force >/dev/null 2>&1 || true
+
+          # Pull the upstream release notes for context in the issue body.
+          notes=$(gh release view "$latest_tag" --repo "$UPSTREAM" --json body --jq .body)
+
+          # Build the body flush at the run-block indent so no stray whitespace leaks
+          # into the rendered Markdown (heredoc-in-YAML is indentation-sensitive).
+          {
+            echo "Upstream [\`exoscale-connector $latest_tag\`](https://github.com/$UPSTREAM/releases/tag/$latest_tag) was released — newer than the advisor's current \`exoscale-connector>=$floor\` floor."
+            echo ""
+            echo "**Action:** triage what (if anything) the advisor should adopt, then decide docs-only floor bump / new live tool / decline. Run the repeatable procedure:"
+            echo ""
+            echo '```'
+            echo "/connector-release-triage $latest_tag"
+            echo '```'
+            echo ""
+            echo "The skill (\`.claude/skills/connector-release-triage/SKILL.md\`) encodes the framework: the docs tools auto-surface new reference pages from the installed connector, and new read-only clients are adopted as live tools **only** if they are catalogue-shaped (what the platform offers), never account resource inventory (design §3, D2)."
+            echo ""
+            echo "<details><summary>Upstream release notes for $latest_tag</summary>"
+            echo ""
+            echo "$notes"
+            echo ""
+            echo "</details>"
+            echo ""
+            echo "---"
+            echo "_Opened automatically by \`.github/workflows/connector-watch.yml\`._"
+          } > issue-body.md
+
+          gh issue create \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Triage: exoscale-connector $latest_tag released (advisor floor $floor)" \
+            --label connector-release \
+            --body-file issue-body.md
