@@ -6,6 +6,35 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-07-09
+
+A knowledge-refresh release: the eight-tool read-only surface is unchanged, but
+the docs tools now serve the richer reference bundle shipped by
+`exoscale-connector` 0.6.0. Because the bundle is read from the installed
+connector at runtime (design §4), the four new asset-type pages appear through
+`search_docs` / `get_asset_page` / `list_asset_types` with no advisor code change
+— raising the floor is what guarantees them to every consumer.
+
+### Changed
+
+- **Connector floor raised to `>=0.6.0`** — 0.6.0 adds live-verified reference
+  pages for **vpc**, **kms**, **deploy-target**, and **event** to the packaged
+  `_skill/reference.md`, plus richer model detail (typed security-group rule
+  references, a DBaaS `version` field, SKS `nvidia_mig_profiles`). The advisor's
+  docs tools surface all of it automatically. 0.6.0 is purely additive with no
+  breaking changes, so no live tool changed and the tool surface is unchanged
+  (design §17).
+
+### Not adopted (deliberate scope)
+
+- 0.6.0's new read-only clients were reviewed against the catalogue-only rule
+  (design §3, D2) and **left out**: `VpcClient` and `KmsKeyClient` list *account*
+  resources (not the platform catalogue), `EventClient` is an audit log, and
+  DBaaS `get_settings` / `get_acl_config` are `get`-verb / instance-scoped. A
+  `list_deploy_targets` tool was considered and declined — deploy targets are
+  org-scoped and empty for most accounts, so the new **deploy-target doc page**
+  covers the topic better than a mostly-empty live tool.
+
 ## [0.4.0] — 2026-06-12
 
 A maintenance and supply-chain hardening release: the eight-tool read-only
@@ -64,7 +93,8 @@ construction.
   forward-pointer from §3; README documents the new tool and its wording was
   tightened.
 
-[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.5.0
 [0.4.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.4.0
 [0.3.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.3.0
 
