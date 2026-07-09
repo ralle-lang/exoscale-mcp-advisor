@@ -363,3 +363,47 @@ convention.
   here, in a release where it still works; (2) the deprecation is recorded in
   `CHANGELOG.md`; (3) removal lands no earlier than the next MINOR after the one
   that announced it. A rename is a deprecate-then-remove, never an in-place change.
+
+---
+
+## 17. Addendum — v0.5.0 connector floor `>=0.6.0` (knowledge refresh)
+
+> Added 2026-07-09. Like §14/§15, sections 1–13 stay verbatim as the v1 record.
+> This addendum introduces **no new tool table** — the tool surface is unchanged
+> at eight — so the doc-parsing guard (§6) is unaffected. The invariants hold:
+> read-only by construction (§6), zero knowledge duplication (§4),
+> `list`-verb-only live tools (§3).
+
+The `exoscale-connector` floor moves from `>=0.5.0` to `>=0.6.0`. Connector 0.6.0
+is purely additive (no breaking changes). Its value to the advisor is entirely in
+the **packaged knowledge bundle**: `_skill/reference.md` gains live-verified
+reference pages for four new asset types — **vpc**, **kms**, **deploy-target**,
+and **event** — plus richer model detail (typed security-group rule references, a
+DBaaS `version` field, SKS `nvidia_mig_profiles`).
+
+Because the advisor reads the bundle from the *installed* connector at runtime
+(§4), `search_docs`, `get_asset_page`, and `list_asset_types` surface all four
+new pages with **no advisor code change**. Raising the declared floor is what
+turns "surfaces if a new enough connector happens to be installed" into a
+guarantee for every consumer, and it is why this is a MINOR (§16: a floor raise
+is a MINOR).
+
+### New read-only clients reviewed and not adopted
+
+0.6.0 also adds four new *read-only* resource clients. Each was checked against
+the catalogue-only rule (§3) and decision **D2** (the live tools resolve the
+platform *catalogue* — what Exoscale offers — not an account's own resource
+inventory):
+
+| Connector addition | Why not a live tool |
+|---|---|
+| `VpcClient.list()` | Lists the account's **own VPCs** — resource inventory, not catalogue. |
+| `KmsKeyClient.list()` | Lists the account's **own keys**; the client also carries secret-bearing crypto verbs kept off even the connector CLI. |
+| `EventClient.list()` | The account **audit log** — operational telemetry, not catalogue; also a non-standard `list(from_, to, zone)` signature. |
+| `DeployTargetClient.list()` | Catalogue-shaped and read-only, but **org-scoped and empty for most accounts**. The new `deploy-target` doc page covers the topic better than a mostly-empty live tool. Reconsider if real sessions ask for it. |
+| DBaaS `get_settings` / `get_acl_config` | `get`-verb (breaks the §3 list-only rule); `get_acl_config` is instance-scoped. |
+
+The existing `list_dbaas_plans` (via `list_service_types`) and `list_sks_versions`
+already return the raw catalogue, so the new DBaaS `version` field and SKS
+`nvidia_mig_profiles` need no change — they enrich models the advisor does not
+currently dump.
