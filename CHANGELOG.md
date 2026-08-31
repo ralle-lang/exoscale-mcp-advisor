@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Removed
+
+- **`Live smoke` workflow (`.github/workflows/live-smoke.yml`)** — the
+  manual-dispatch job that ran `tests/integration` against a real account was
+  never executed once since it was added, and could not be: it reads
+  `EXOSCALE_API_KEY` / `_SECRET` / `_ZONE` from repository secrets, and none are
+  configured (the `pypi` environment holds no secrets either, and release
+  publishing uses OIDC trusted publishing rather than a token). A workflow that
+  cannot run implies coverage that does not exist, so it is gone. **The gated
+  live smoke test itself is unchanged** — `tests/integration` still runs
+  read-only behind `EXOSCALE_RUN_LIVE_TESTS=1` with credentials injected from
+  the environment (README "Developer guide", design §9.4). Restore the workflow
+  if and when a least-privilege read-only key is provisioned.
+
 ## [0.5.0] — 2026-07-09
 
 A knowledge-refresh release: the eight-tool read-only surface is unchanged, but
