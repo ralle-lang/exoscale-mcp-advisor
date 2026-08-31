@@ -30,6 +30,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   (`E4,E7,E9,F,UP,I,B,SIM,RUF`) is what the codebase already satisfies, and ruff
   upgrades now arrive as reviewable Dependabot PRs. Line length (E5) is
   deliberately not enforced — revisit alongside adopting `ruff format`.
+- **`mypy` pinned to `==2.3.1`** (was `>=1.8`) — the same floating-toolchain
+  risk as ruff, one release from breaking the build for reasons unrelated to any
+  commit: CI was resolving mypy 2.x off a 1.8 floor, and a local venv had drifted
+  to 2.1.0 against CI's 2.3.1. Both checkers are now version-locked, so Lint and
+  Type-check mean the same thing locally and in CI, and both move only via a
+  reviewed Dependabot PR.
 
 ### Security
 
