@@ -17,7 +17,7 @@ Credentials are read from the environment by the default factory
 """
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from exoscale_connector import ExoscaleClient
 from exoscale_connector.models import ExoscaleModel

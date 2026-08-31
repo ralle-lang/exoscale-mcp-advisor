@@ -14,7 +14,8 @@ catalogue builds its HTTP client lazily, only when a live tool is first called.
 """
 from __future__ import annotations
 
-from typing import Callable, TypeVar
+from collections.abc import Callable
+from typing import TypeVar
 
 from exoscale_connector.errors import APIError, ConfigError
 from mcp.server.fastmcp import FastMCP

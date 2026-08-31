@@ -6,6 +6,48 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Removed
+
+- **`Live smoke` workflow (`.github/workflows/live-smoke.yml`)** — the
+  manual-dispatch job that ran `tests/integration` against a real account was
+  never executed once since it was added, and could not be: it reads
+  `EXOSCALE_API_KEY` / `_SECRET` / `_ZONE` from repository secrets, and none are
+  configured (the `pypi` environment holds no secrets either, and release
+  publishing uses OIDC trusted publishing rather than a token). A workflow that
+  cannot run implies coverage that does not exist, so it is gone. **The gated
+  live smoke test itself is unchanged** — `tests/integration` still runs
+  read-only behind `EXOSCALE_RUN_LIVE_TESTS=1` with credentials injected from
+  the environment (README "Developer guide", design §9.4). Restore the workflow
+  if and when a least-privilege read-only key is provisioned.
+
+### Changed
+
+- **The lint gate is now a repo decision, not an upstream default.**
+  `pyproject.toml` gained `[tool.ruff.lint] select` and the dev extra pins
+  `ruff==0.16.5`. Previously neither existed: `ruff>=0.4` let CI install the
+  newest release, so when 0.16 enabled pyupgrade rules 0.15 did not, the Lint
+  step began failing on branches containing no Python at all. The selected set
+  (`E4,E7,E9,F,UP,I,B,SIM,RUF`) is what the codebase already satisfies, and ruff
+  upgrades now arrive as reviewable Dependabot PRs. Line length (E5) is
+  deliberately not enforced — revisit alongside adopting `ruff format`.
+- **`mypy` pinned to `==2.3.1`** (was `>=1.8`) — the same floating-toolchain
+  risk as ruff, one release from breaking the build for reasons unrelated to any
+  commit: CI was resolving mypy 2.x off a 1.8 floor, and a local venv had drifted
+  to 2.1.0 against CI's 2.3.1. Both checkers are now version-locked, so Lint and
+  Type-check mean the same thing locally and in CI, and both move only via a
+  reviewed Dependabot PR.
+
+### Security
+
+- **Dependabot now watches the SHA-pinned actions** (`.github/dependabot.yml`,
+  weekly). Pinning every action to a full commit SHA (#13) makes the pins
+  immutable, which also means they never pick up an upstream security fix on
+  their own; Dependabot closes that loop by raising the SHA and its trailing
+  version comment. The `pip` ecosystem is watched too, with
+  **`exoscale-connector` explicitly ignored** — its floor is raised only through
+  the triage flow (`connector-watch.yml` → `/connector-release-triage`), never as
+  an automatic dependency bump (design §16).
+
 ## [0.5.0] — 2026-07-09
 
 A knowledge-refresh release: the eight-tool read-only surface is unchanged, but

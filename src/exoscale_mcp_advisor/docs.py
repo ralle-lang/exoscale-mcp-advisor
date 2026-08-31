@@ -19,7 +19,6 @@ import re
 from dataclasses import dataclass
 from functools import lru_cache
 from importlib.resources import files
-from typing import Optional
 
 # The connector package and the path, within it, to the packaged bundle.
 _CONNECTOR_PACKAGE = "exoscale_connector"
@@ -40,7 +39,7 @@ _WORD_RE = re.compile(r"[a-z0-9]+")
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
 
 
-def _heading_at(line: str) -> Optional[tuple[int, str]]:
+def _heading_at(line: str) -> tuple[int, str] | None:
     """Return ``(level, text)`` if the line is an ATX heading, else ``None``."""
     match = _HEADING_RE.match(line)
     if not match:
@@ -108,7 +107,7 @@ def _split_sections(markdown: str) -> list[Section]:
     stack: list[tuple[int, str]] = []
     order = 0
 
-    current: Optional[tuple[str, int, str]] = None  # (heading, level, id)
+    current: tuple[str, int, str] | None = None  # (heading, level, id)
     body_lines: list[str] = []
     in_fence = False
 
@@ -169,8 +168,8 @@ def _extract_asset_pages(markdown: str) -> dict[str, AssetPage]:
 
     in_section = False
     in_fence = False
-    page_heading: Optional[str] = None
-    page_slug: Optional[str] = None
+    page_heading: str | None = None
+    page_slug: str | None = None
     page_lines: list[str] = []
 
     def flush() -> None:
@@ -219,7 +218,7 @@ class DocsBundle:
         self._asset_pages = _extract_asset_pages(markdown)
 
     @classmethod
-    def from_package(cls) -> "DocsBundle":
+    def from_package(cls) -> DocsBundle:
         """Load the bundle shipped by the installed ``exoscale-connector`` package."""
         resource = files(_CONNECTOR_PACKAGE)
         for part in _BUNDLE_PARTS:

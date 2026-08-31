@@ -1,0 +1,37 @@
+# Dependabot keeps the SHA-pinned actions current.
+#
+# Every action in .github/workflows is pinned to a full commit SHA (hardened in
+# #13/PR #14) — immutable by design, which also means a pin never picks up an
+# upstream security fix on its own. Dependabot is what closes that loop: it
+# raises the SHA and rewrites the trailing `# vX.Y.Z` comment, so the pins stay
+# both immutable and current.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "build(deps)"
+
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "build(deps)"
+    ignore:
+      # The exoscale-connector floor is a deliberate policy decision, not a
+      # dependency bump: it is raised only after the release is triaged through
+      # .claude/skills/connector-release-triage (docs-only bump / new live tool /
+      # decline), and .github/workflows/connector-watch.yml files that triage
+      # issue. Letting Dependabot raise it would bypass that judgement and the
+      # CI floor matrix that guards it (design §16).
+      - dependency-name: exoscale-connector
