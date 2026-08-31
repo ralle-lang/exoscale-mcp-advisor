@@ -20,6 +20,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the environment (README "Developer guide", design §9.4). Restore the workflow
   if and when a least-privilege read-only key is provisioned.
 
+### Security
+
+- **Dependabot now watches the SHA-pinned actions** (`.github/dependabot.yml`,
+  weekly). Pinning every action to a full commit SHA (#13) makes the pins
+  immutable, which also means they never pick up an upstream security fix on
+  their own; Dependabot closes that loop by raising the SHA and its trailing
+  version comment. The `pip` ecosystem is watched too, with
+  **`exoscale-connector` explicitly ignored** — its floor is raised only through
+  the triage flow (`connector-watch.yml` → `/connector-release-triage`), never as
+  an automatic dependency bump (design §16).
+
 ## [0.5.0] — 2026-07-09
 
 A knowledge-refresh release: the eight-tool read-only surface is unchanged, but
