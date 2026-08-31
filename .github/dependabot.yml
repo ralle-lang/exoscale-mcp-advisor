@@ -35,3 +35,14 @@ updates:
       # issue. Letting Dependabot raise it would bypass that judgement and the
       # CI floor matrix that guards it (design §16).
       - dependency-name: exoscale-connector
+
+      # `mcp` is capped at <2 on purpose (see the comment on the dependency in
+      # pyproject.toml). mcp 2.x is not a bump but a migration: it moves FastMCP
+      # out of `mcp.server.fastmcp` and renames the ToolAnnotations fields to
+      # snake_case — and those annotations are the read-only contract, asserted
+      # per-tool by tests/unit/test_no_mutation.py. Dependabot proposed exactly
+      # that widening in #25; CI failed with 9 errors and it was closed. Only
+      # major updates are ignored, so a future in-range floor raise can still be
+      # proposed; adopting 2.x stays a deliberate, tested migration.
+      - dependency-name: mcp
+        update-types: ["version-update:semver-major"]

@@ -46,7 +46,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   version comment. The `pip` ecosystem is watched too, with
   **`exoscale-connector` explicitly ignored** — its floor is raised only through
   the triage flow (`connector-watch.yml` → `/connector-release-triage`), never as
-  an automatic dependency bump (design §16).
+  an automatic dependency bump (design §16). `mcp` is likewise ignored for major
+  updates: its `<2` cap is deliberate, and Dependabot's attempt to widen it to
+  `<3` (#25) failed CI with 9 errors — mcp 2.x moves `FastMCP` and renames the
+  `ToolAnnotations` fields that `test_no_mutation.py` asserts on, so adopting it
+  is a migration to vet, not a bump to merge.
 
 ## [0.5.0] — 2026-07-09
 
