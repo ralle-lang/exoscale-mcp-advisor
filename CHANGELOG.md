@@ -20,6 +20,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the environment (README "Developer guide", design §9.4). Restore the workflow
   if and when a least-privilege read-only key is provisioned.
 
+### Changed
+
+- **The lint gate is now a repo decision, not an upstream default.**
+  `pyproject.toml` gained `[tool.ruff.lint] select` and the dev extra pins
+  `ruff==0.16.5`. Previously neither existed: `ruff>=0.4` let CI install the
+  newest release, so when 0.16 enabled pyupgrade rules 0.15 did not, the Lint
+  step began failing on branches containing no Python at all. The selected set
+  (`E4,E7,E9,F,UP,I,B,SIM,RUF`) is what the codebase already satisfies, and ruff
+  upgrades now arrive as reviewable Dependabot PRs. Line length (E5) is
+  deliberately not enforced — revisit alongside adopting `ruff format`.
+
 ### Security
 
 - **Dependabot now watches the SHA-pinned actions** (`.github/dependabot.yml`,

@@ -55,7 +55,7 @@ Changelog = "https://github.com/ralle-lang/exoscale-mcp-advisor/blob/main/CHANGE
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4",
-    "ruff>=0.4",
+    "ruff==0.16.5",  # pinned: see [tool.ruff]; bumped via Dependabot
     "mypy>=1.8",
     "coverage>=7.0",
     "build>=1.0",
@@ -72,6 +72,30 @@ path = "src/exoscale_mcp_advisor/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/exoscale_mcp_advisor"]
+
+[tool.ruff]
+# Ruff is pinned in [dev] and its rule set is declared here on purpose. With
+# neither in place the lint gate meant "whatever the newest ruff enforces this
+# week": CI installs the latest, and 0.16 turned on pyupgrade rules 0.15 did
+# not, so the Lint step failed on a branch that touched no Python. Rules are now
+# a repo decision, and a ruff upgrade arrives as a reviewable Dependabot PR
+# rather than a surprise red build.
+#
+# target-version is inferred from requires-python (>=3.10) — not duplicated here
+# so the two cannot drift.
+
+[tool.ruff.lint]
+# E4/E7/E9 + F are ruff's historical defaults. The rest is what this codebase
+# already satisfies with no edits, so it costs nothing to enforce:
+#   UP  pyupgrade      — the modern syntax the >=3.10 floor allows
+#   I   isort          — import order, already tidy
+#   B   bugbear        — the usual correctness traps
+#   SIM flake8-simplify
+#   RUF ruff's own
+# E5 (line length) is deliberately absent: nine lines run 89–97 chars and no
+# formatter is enforced here, so E501 would be pure churn. Revisit together with
+# adopting `ruff format`.
+select = ["E4", "E7", "E9", "F", "UP", "I", "B", "SIM", "RUF"]
 
 [tool.coverage.report]
 # The module-execution guard is a launcher line, not behaviour to test.
