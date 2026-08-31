@@ -8,9 +8,9 @@ catalogue runs against a fake HTTP client); async sessions are driven with
 """
 from __future__ import annotations
 
-from collections.abc import Awaitable
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
-from typing import AsyncIterator, Callable, TypeVar
+from typing import TypeVar
 
 import anyio
 from exoscale_connector.errors import APIError, ConfigError
