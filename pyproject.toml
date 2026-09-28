@@ -55,7 +55,7 @@ Changelog = "https://github.com/ralle-lang/exoscale-mcp-advisor/blob/main/CHANGE
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4",
-    "ruff==0.16.5",  # pinned: see [tool.ruff]; bumped via Dependabot
+    "ruff==0.16.9",  # pinned: see [tool.ruff]; bumped via Dependabot
     "mypy==2.3.1",  # pinned for the same reason as ruff; bumped via Dependabot
     "coverage>=7.0",
     "build>=1.0",
