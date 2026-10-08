@@ -41,7 +41,14 @@ class _FakeClient:
     def __init__(self, error: Exception | None = None) -> None:
         self._error = error
 
-    def get(self, path: str, *, zone: str | None = None, params: dict | None = None) -> dict:
+    def get(
+        self,
+        path: str,
+        *,
+        zone: str | None = None,
+        params: dict | None = None,
+        signed: bool = True,
+    ) -> dict:
         if self._error is not None:
             raise self._error
         return {

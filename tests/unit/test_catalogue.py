@@ -24,7 +24,12 @@ class FakeClient:
         self.calls: list[tuple[str, str | None, dict | None]] = []
 
     def get(
-        self, path: str, *, zone: str | None = None, params: dict | None = None
+        self,
+        path: str,
+        *,
+        zone: str | None = None,
+        params: dict | None = None,
+        signed: bool = True,
     ) -> dict:
         self.calls.append((path, zone, params))
         if self._error is not None:
