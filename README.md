@@ -159,7 +159,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e '.[dev]'
 ```
 
-Requires **Python ≥3.10** (the `mcp` SDK floor).
+Requires **Python ≥3.11** (the `mcp` SDK needs ≥3.10, which is end-of-life).
 
 **Checks**
 

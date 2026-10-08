@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** the minimum supported Python is now **3.11** (was 3.10, which
+  reaches end-of-life in October 2026), matching `exoscale-connector`. CI now
+  tests 3.11 and 3.14.
+
 ### Removed
 
 - **`Live smoke` workflow (`.github/workflows/live-smoke.yml`)** — the

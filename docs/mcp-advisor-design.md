@@ -38,8 +38,8 @@ This is the direct application of the project's two standing decisions:
 It lives in a **separate repository** because it adds an MCP-framework
 dependency and a different risk/release profile, and the connector's
 "requests + pydantic only" promise must hold. A concrete consequence: the
-official `mcp` Python SDK requires Python ≥3.10, while the connector targets
-≥3.9. Keeping the SDK out of the connector preserves that floor.
+official `mcp` Python SDK requires Python ≥3.10, while the connector targeted
+≥3.9 at the time. Keeping the SDK out of the connector preserves that floor.
 
 ---
 
@@ -176,8 +176,9 @@ The live catalogue tools need real credentials. Defense in depth:
   needs it (§9).
 - **Distribution:** published to PyPI as `exoscale-mcp-advisor`, runnable with
   `uvx exoscale-mcp-advisor` — no clone/install step for consumers.
-- **Python floor:** ≥3.10 (the `mcp` SDK requirement; the new repo is free to
-  set this since it does not share the connector's ≥3.9 promise).
+- **Python floor:** ≥3.11. Originally ≥3.10 (the `mcp` SDK requirement);
+  raised to 3.11 in October 2026 when 3.10 reached end-of-life, matching the
+  connector's floor.
 
 ---
 
