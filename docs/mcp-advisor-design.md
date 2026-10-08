@@ -408,3 +408,20 @@ The existing `list_dbaas_plans` (via `list_service_types`) and `list_sks_version
 already return the raw catalogue, so the new DBaaS `version` field and SKS
 `nvidia_mig_profiles` need no change — they enrich models the advisor does not
 currently dump.
+
+## 18. Addendum — connector floor `>=0.6.2` (zone listing fix)
+
+> Added 2026-10-08. No new tool table; the tool surface and every invariant from
+> §17 are unchanged.
+
+The `exoscale-connector` floor moves from `>=0.6.0` to `>=0.6.2`. Both releases
+are bug fixes with no API change. The one that matters most to the advisor is in
+0.6.1: the API applies IAM to *signed* `/zone` requests, so `list_zones` returned
+403 for keys whose role does not grant it, even though the zone catalogue is
+public. The connector now lists zones unsigned. 0.6.2 resolves the audit's
+medium-severity findings and corrects several reference pages in the packaged
+bundle the docs tools serve (§4).
+
+Neither release adds a client, so there is nothing new to review against the
+catalogue-only rule (§3). A floor raise is a MINOR (§16).
+

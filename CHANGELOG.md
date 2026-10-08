@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Connector floor raised to `>=0.6.2`.** Connector 0.6.1 lists zones without
+  request signing, so `list_zones` no longer fails with 403 for API keys whose
+  IAM role does not grant the zone endpoint; 0.6.2 adds the audit bug fixes and
+  corrected reference pages the docs tools serve. Both are bug-fix releases with
+  no API change for the advisor.
 - **Breaking:** the minimum supported Python is now **3.11** (was 3.10, which
   reaches end-of-life in October 2026), matching `exoscale-connector`. CI now
   tests 3.11 and 3.14.
