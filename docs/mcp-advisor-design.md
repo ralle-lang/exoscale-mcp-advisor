@@ -425,3 +425,35 @@ bundle the docs tools serve (§4).
 Neither release adds a client, so there is nothing new to review against the
 catalogue-only rule (§3). A floor raise is a MINOR (§16).
 
+## 19. Addendum — connector floor `>=0.7.0` (live-verified reference)
+
+> Added 2026-11-02. No new tool table; the tool surface and every invariant from
+> §17 are unchanged.
+
+The `exoscale-connector` floor moves from `>=0.6.2` to `>=0.7.0`. What matters
+to the advisor is the packaged bundle the docs tools serve (§4). 0.7.0 is the
+first release whose VPC and KMS reference pages were verified live against the
+API, and the 0.6.x pages were wrong in ways an AI would copy:
+
+- a VPC route `target` written as a bare address, which the API rejects (it
+  needs `ip=<next-hop>`);
+- KMS rotation shown as a single `enable_rotation` call, which fails on new
+  keys because they already rotate automatically;
+- a KMS data key sized by byte count, which the 0.6.x client could not
+  request.
+
+0.7.0 also adds new asset reference content (DBaaS databases, CA
+certificate, logs and metrics; the SKS deprecated-resources check; the
+organization IAM policy) and requires Python `>=3.11`. The advisor has required
+3.11 since the same cycle, so consumers lose nothing.
+
+The catalogue clients the tools wrap (`ZoneClient`, `InstanceTypeClient`,
+`TemplateClient`, `SksClusterClient.list_versions`,
+`DBaaSServiceClient.list_service_types`) changed only in type-annotation syntax
+between 0.6.2 and 0.7.0, so tool output is unchanged. The connector's two
+breaking changes, the Python floor and the `LoadBalancerService` healthcheck
+model, do not touch any of those clients. 0.7.0 adds clients with write
+methods, such as the organization IAM policy and DBaaS databases. The advisor
+does not import them, and the catalogue-only rule (§3) keeps it that way. A
+floor raise is a MINOR (§16).
+
