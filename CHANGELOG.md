@@ -6,22 +6,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-11-02
+
+A maintenance release: the eight-tool read-only surface is unchanged. The docs
+tools now serve `exoscale-connector` 0.7.0's reference bundle, whose VPC and KMS
+pages were verified live against the API, and the toolchain is locked down. One
+breaking change: the minimum supported Python is now **3.11**.
+
 ### Changed
 
-- **Connector floor raised to `>=0.7.0`.** The docs tools serve the
-  connector's packaged reference, and 0.7.0's VPC and KMS pages were verified
-  live against the API. The 0.6.x pages showed a VPC route target the API
-  rejects and KMS rotation and data-key calls that fail. 0.7.0 also requires
-  Python 3.11, matching this package. The catalogue clients the advisor wraps
-  are unchanged, so tool output is unchanged.
-- **Connector floor raised to `>=0.6.2`.** Connector 0.6.1 lists zones without
-  request signing, so `list_zones` no longer fails with 403 for API keys whose
-  IAM role does not grant the zone endpoint; 0.6.2 adds the audit bug fixes and
-  corrected reference pages the docs tools serve. Both are bug-fix releases with
-  no API change for the advisor.
 - **Breaking:** the minimum supported Python is now **3.11** (was 3.10, which
-  reaches end-of-life in October 2026), matching `exoscale-connector`. CI now
-  tests 3.11 and 3.14.
+  reached end-of-life in October 2026), matching `exoscale-connector`. CI tests
+  3.11 and 3.14. Stay on 0.5.x for Python 3.10.
+- **Connector floor raised to `>=0.7.0`** (via `>=0.6.2`). The docs tools serve
+  the connector's packaged reference, and 0.7.0's VPC and KMS pages were
+  verified live against the API. The 0.6.x pages showed a VPC route target the
+  API rejects and KMS rotation and data-key calls that fail. 0.6.1 also lists
+  zones without request signing, so `list_zones` no longer fails with 403 for
+  API keys whose IAM role does not grant the zone endpoint. The catalogue
+  clients the advisor wraps are unchanged, so tool output is unchanged
+  (design §18, §19).
+- **The lint gate is now a repo decision, not an upstream default.**
+  `pyproject.toml` gained `[tool.ruff.lint] select` and the dev extra pins
+  ruff (now `==0.17.3`). Previously neither existed: `ruff>=0.4` let CI install
+  the newest release, so when 0.16 enabled pyupgrade rules 0.15 did not, the
+  Lint step began failing on branches containing no Python at all. The selected
+  set (`E4,E7,E9,F,UP,I,B,SIM,RUF`) is what the codebase already satisfies, and
+  ruff upgrades now arrive as reviewable Dependabot PRs. Line length (E5) is
+  deliberately not enforced — revisit alongside adopting `ruff format`.
+- **`mypy` pinned** (now `==2.4.1`; was `>=1.8`) — the same floating-toolchain
+  risk as ruff: CI was resolving mypy 2.x off a 1.8 floor, and a local venv had
+  drifted from CI. Both checkers are now version-locked, so Lint and Type-check
+  mean the same thing locally and in CI, and both move only via a reviewed
+  Dependabot PR.
 
 ### Removed
 
@@ -37,23 +54,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the environment (README "Developer guide", design §9.4). Restore the workflow
   if and when a least-privilege read-only key is provisioned.
 
-### Changed
-
-- **The lint gate is now a repo decision, not an upstream default.**
-  `pyproject.toml` gained `[tool.ruff.lint] select` and the dev extra pins
-  `ruff==0.16.5`. Previously neither existed: `ruff>=0.4` let CI install the
-  newest release, so when 0.16 enabled pyupgrade rules 0.15 did not, the Lint
-  step began failing on branches containing no Python at all. The selected set
-  (`E4,E7,E9,F,UP,I,B,SIM,RUF`) is what the codebase already satisfies, and ruff
-  upgrades now arrive as reviewable Dependabot PRs. Line length (E5) is
-  deliberately not enforced — revisit alongside adopting `ruff format`.
-- **`mypy` pinned to `==2.3.1`** (was `>=1.8`) — the same floating-toolchain
-  risk as ruff, one release from breaking the build for reasons unrelated to any
-  commit: CI was resolving mypy 2.x off a 1.8 floor, and a local venv had drifted
-  to 2.1.0 against CI's 2.3.1. Both checkers are now version-locked, so Lint and
-  Type-check mean the same thing locally and in CI, and both move only via a
-  reviewed Dependabot PR.
-
 ### Security
 
 - **Dependabot now watches the SHA-pinned actions** (`.github/dependabot.yml`,
@@ -63,11 +63,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   version comment. The `pip` ecosystem is watched too, with
   **`exoscale-connector` explicitly ignored** — its floor is raised only through
   the triage flow (`connector-watch.yml` → `/connector-release-triage`), never as
-  an automatic dependency bump (design §16). `mcp` is likewise ignored for major
-  updates: its `<2` cap is deliberate, and Dependabot's attempt to widen it to
-  `<3` (#25) failed CI with 9 errors — mcp 2.x moves `FastMCP` and renames the
-  `ToolAnnotations` fields that `test_no_mutation.py` asserts on, so adopting it
-  is a migration to vet, not a bump to merge.
+  an automatic dependency bump (design §16). `mcp` 2.x is likewise ignored: its
+  `<2` cap is deliberate, and Dependabot's attempts to widen it to `<3` (#25,
+  #29) failed CI — mcp 2.x moves `FastMCP` and renames the `ToolAnnotations`
+  fields that `test_no_mutation.py` asserts on, so adopting it is a migration to
+  vet, not a bump to merge. The rule ignores `mcp >=2` by version, because
+  Dependabot does not classify a range widening as a major update.
+
+### Not adopted (deliberate scope)
+
+- Connector 0.7.0's new clients were reviewed against the catalogue-only rule
+  (design §3) and **left out**. DBaaS logs, metrics and databases, the SKS
+  deprecated-resources check and the organization IAM policy all read or change
+  *account* resources, not the platform catalogue, and several have write
+  methods. The DBaaS CA certificate is account-wide, not a catalogue either.
+  Their reference pages reach the docs tools anyway.
 
 ## [0.5.0] — 2026-07-09
 
@@ -156,7 +166,8 @@ construction.
   forward-pointer from §3; README documents the new tool and its wording was
   tightened.
 
-[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.6.0
 [0.5.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.5.0
 [0.4.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.4.0
 [0.3.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.3.0
