@@ -41,8 +41,11 @@ updates:
       # out of `mcp.server.fastmcp` and renames the ToolAnnotations fields to
       # snake_case — and those annotations are the read-only contract, asserted
       # per-tool by tests/unit/test_no_mutation.py. Dependabot proposed exactly
-      # that widening in #25; CI failed with 9 errors and it was closed. Only
-      # major updates are ignored, so a future in-range floor raise can still be
-      # proposed; adopting 2.x stays a deliberate, tested migration.
+      # that widening in #25; CI failed with 9 errors and it was closed. The
+      # rule ignores the 2.x versions themselves rather than "major updates":
+      # Dependabot does not classify widening `<2` to `<3` as a major update, so
+      # an update-types filter let the same widening through again as #29. An
+      # in-range floor raise (1.x) can still be proposed; adopting 2.x stays a
+      # deliberate, tested migration.
       - dependency-name: mcp
-        update-types: ["version-update:semver-major"]
+        versions: [">=2"]
