@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Connector floor raised to `>=0.7.0`.** The docs tools serve the
+  connector's packaged reference, and 0.7.0's VPC and KMS pages were verified
+  live against the API. The 0.6.x pages showed a VPC route target the API
+  rejects and KMS rotation and data-key calls that fail. 0.7.0 also requires
+  Python 3.11, matching this package. The catalogue clients the advisor wraps
+  are unchanged, so tool output is unchanged.
 - **Connector floor raised to `>=0.6.2`.** Connector 0.6.1 lists zones without
   request signing, so `list_zones` no longer fails with 403 for API keys whose
   IAM role does not grant the zone endpoint; 0.6.2 adds the audit bug fixes and
