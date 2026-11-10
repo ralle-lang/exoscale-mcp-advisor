@@ -457,3 +457,30 @@ methods, such as the organization IAM policy and DBaaS databases. The advisor
 does not import them, and the catalogue-only rule (§3) keeps it that way. A
 floor raise is a MINOR (§16).
 
+## 20. Addendum — connector floor `>=0.8.0` (0.7.x and DBaaS tier C reference)
+
+> Added 2026-11-10. No new tool table; the tool surface and every invariant from
+> §17 are unchanged.
+
+The `exoscale-connector` floor moves from `>=0.7.0` to `>=0.8.0`, covering three
+connector releases. 0.7.1 adds VPC subnet address pinning. 0.7.2 adds about forty
+operations on clients the connector already had (instance rescue, resize,
+reset and protection; snapshot promotion and template copy; security-group and
+elastic-IP attachment; pool eviction; DNS zone-file export; SKS upgrades,
+credential rotation and inspection; single-field resets). 0.8.0 adds the DBaaS
+engine-specific operations: migration, PostgreSQL connection pools, replication
+and upgrade checks, and the Kafka, OpenSearch and Valkey ACLs, all verified live
+on five engines. What matters to the advisor is that the packaged bundle the
+docs tools serve (§4) documents all of it, including the places where the live
+API differs from the spec.
+
+None of the three releases adds a client. Every new method is a write, or a
+read scoped to one of the account's own resources (`get_*`, the Valkey user
+list), so the catalogue-only, list-only rule (§3) admits no new tool.
+
+The catalogue clients the tools wrap are unchanged except for one model: 0.8.0
+types `maintainer`, `zones` and `application_consistent_snapshot_enabled` on
+`Template`. `_dump` already passed these through as untyped API fields, so
+`list_templates` returns the same data; only the last key changes from
+`application-consistent-snapshot-enabled` to the snake_case spelling every
+typed field uses. A floor raise is a MINOR (§16).
