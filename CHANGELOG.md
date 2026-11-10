@@ -6,6 +6,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-11-10
+
+A knowledge-refresh release: the eight-tool read-only surface is unchanged. The
+docs tools now serve `exoscale-connector` 0.8.0's reference bundle.
+
+### Changed
+
+- **Connector floor raised to `>=0.8.0`** (from `>=0.7.0`, skipping 0.7.1 and
+  0.7.2). The bundle the docs tools serve gains the pages for everything added
+  since 0.7.0: VPC subnet address pinning, about forty instance, snapshot,
+  template, security-group, elastic-IP, pool, DNS, SKS and load-balancer
+  operations, and DBaaS migration, PostgreSQL connection pools, the Kafka,
+  OpenSearch and Valkey ACLs and the per-engine user options. The 0.8.0 DBaaS
+  pages were verified live against the API on five engines (design §20).
+- **`list_templates` returns three fields as typed fields.** 0.8.0 types
+  `maintainer`, `zones` and `application_consistent_snapshot_enabled` on the
+  connector's `Template` model. They used to pass through as untyped API
+  fields, so the last one was keyed `application-consistent-snapshot-enabled`;
+  it now uses the snake_case key like every other typed field (for example
+  `password_enabled`).
+
+### Not adopted
+
+- No connector release since 0.7.0 adds a client, and the new methods are
+  either writes or instance-scoped reads (`get_*`, `list_valkey_users`), so the
+  catalogue-only, list-only rule (design §3) adds no tool.
+
 ## [0.6.0] — 2026-11-02
 
 A maintenance release: the eight-tool read-only surface is unchanged. The docs
@@ -166,7 +193,8 @@ construction.
   forward-pointer from §3; README documents the new tool and its wording was
   tightened.
 
-[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.7.0
 [0.6.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.6.0
 [0.5.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.5.0
 [0.4.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.4.0
