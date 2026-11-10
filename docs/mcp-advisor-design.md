@@ -3,7 +3,8 @@
 > **Status:** implemented — living record. The `exoscale-mcp-advisor` repository
 > exists and has shipped (see [`CHANGELOG.md`](../CHANGELOG.md)); this is its
 > founding design document, now maintained as a living record. **Sections 1–13
-> are preserved verbatim as the original design proposal (historical):** their
+> are preserved as the original design proposal (historical), verbatim except
+> for later fixes to §8 (the Python floor and a cross-reference):** their
 > future tense and "issue #7" framing describe the pre-implementation plan and are
 > kept as written. The per-release addenda (§14 onward) are the living record of
 > how the surface and policy actually evolved, and the doc-parsing test (§6) keeps
@@ -173,7 +174,7 @@ The live catalogue tools need real credentials. Defense in depth:
 
 - **Framework:** the official `mcp` Python SDK.
 - **Transport:** stdio for v1. HTTP is a non-goal until a concrete consumer
-  needs it (§9).
+  needs it (§10).
 - **Distribution:** published to PyPI as `exoscale-mcp-advisor`, runnable with
   `uvx exoscale-mcp-advisor` — no clone/install step for consumers.
 - **Python floor:** ≥3.11. Originally ≥3.10 (the `mcp` SDK requirement);
@@ -348,7 +349,7 @@ convention.
   internals, the exact wording of error messages, and which `exoscale-connector`
   method backs a given tool.
 - **What a version bump means:**
-  - **PATCH** (`0.4.x`): bug fixes only — no tool added or removed, no breaking
+  - **PATCH** (`0.N.x`): bug fixes only — no tool added or removed, no breaking
     change to an existing tool's contract.
   - **MINOR** (`0.x.0`): may add a tool, make a breaking change to an existing
     tool's name or contract, or raise the `exoscale-connector` floor. Pin the
@@ -469,18 +470,21 @@ reset and protection; snapshot promotion and template copy; security-group and
 elastic-IP attachment; pool eviction; DNS zone-file export; SKS upgrades,
 credential rotation and inspection; single-field resets). 0.8.0 adds the DBaaS
 engine-specific operations: migration, PostgreSQL connection pools, replication
-and upgrade checks, and the Kafka, OpenSearch and Valkey ACLs, all verified live
-on five engines. What matters to the advisor is that the packaged bundle the
+and upgrade checks, and the Kafka, OpenSearch and Valkey ACLs, verified live on five
+engines except for `check_migration` and `reveal_kafka_connect_password`. What matters to the advisor is that the packaged bundle the
 docs tools serve (§4) documents all of it, including the places where the live
 API differs from the spec.
 
 None of the three releases adds a client. Every new method is a write, or a
-read scoped to one of the account's own resources (`get_*`, the Valkey user
-list), so the catalogue-only, list-only rule (§3) admits no new tool.
+read scoped to one of the account's own resources (such as the `get_*` and
+`reveal_*` methods, `check_upgrade`, the Valkey user list), so the catalogue-only, list-only rule (§3) admits no new tool.
 
-The catalogue clients the tools wrap are unchanged except for one model: 0.8.0
+The catalogue clients the tools wrap are unchanged except for one model: 0.7.2
 types `maintainer`, `zones` and `application_consistent_snapshot_enabled` on
 `Template`. `_dump` already passed these through as untyped API fields, so
 `list_templates` returns the same data; only the last key changes from
 `application-consistent-snapshot-enabled` to the snake_case spelling every
-typed field uses. A floor raise is a MINOR (§16).
+typed field uses. That is a change to a documented return shape. It reached
+anyone running advisor 0.6.0 on connector 0.7.2 or later, and the 0.8.0 floor
+makes it universal; the CHANGELOG marks it breaking. A floor raise is a MINOR
+(§16).
