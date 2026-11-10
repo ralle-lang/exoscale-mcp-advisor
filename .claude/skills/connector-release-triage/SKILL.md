@@ -16,7 +16,7 @@ The `exoscale-mcp-advisor` is a **read-only** MCP server that stands on
 decision and a shipped advisor release. It is the repeatable form of the manual
 0.6.0 triage.
 
-Optional argument: the upstream tag to triage (e.g. `v0.7.0`). If omitted, use
+Optional argument: the upstream tag to triage (e.g. `v0.9.0`). If omitted, use
 the latest upstream release.
 
 ## The two things that matter (internalise these first)
@@ -112,9 +112,11 @@ The advisor releases via a branch → PR → GitHub Release → PyPI (OIDC) flow
 
 1. `git checkout -b release/vX.Y.Z`, commit atomically (Conventional Commits,
    **no `Co-Authored-By` trailer** per the user's rules). Ask before pushing.
-2. Push, open a PR to `main`, wait for CI green, squash-merge.
-3. Sync `main` (`git pull --ff-only`), then
-   `gh release create vX.Y.Z --title "vX.Y.Z" --generate-notes`.
+2. Push, open a PR to `main`, wait for CI green, rebase-merge with
+   `gh pr merge <n> --rebase -R ralle-lang/exoscale-mcp-advisor` (keeps the
+   atomic commits; `-R` stops gh from fast-forwarding local `main`).
+3. `gh release create vX.Y.Z --target main --title "vX.Y.Z" --generate-notes`
+   (no local pull needed; ask before syncing local `main`).
 4. The published Release triggers `.github/workflows/release.yml`
    (`pypa/gh-action-pypi-publish` via OIDC trusted publishing) — confirm the run
    succeeds and the version is live on PyPI.
