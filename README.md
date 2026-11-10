@@ -33,12 +33,12 @@ Tool surface (see design §3):
 
 | Tool | Credentials | Purpose |
 |------|:-----------:|---------|
-| `search_docs(query)` | — | Ranked sections from the connector's reference bundle. |
+| `search_docs(query, limit=5)` | — | Ranked sections from the connector's reference bundle. |
 | `get_asset_page(asset_type)` | — | Full reference page for one asset type. |
 | `list_asset_types()` | — | The asset-type index (slug + heading) for discovery. |
 | `list_zones()` | ✔ | Live list of zones. |
 | `list_instance_types(zone)` | ✔ | Live list of instance types (with derived `memory_gib`). |
-| `list_templates(zone, visibility)` | ✔ | Live list of templates (with derived `size_gib`). |
+| `list_templates(zone, visibility="public")` | ✔ | Live list of templates (with derived `size_gib`). |
 | `list_dbaas_plans(zone=None)` | ✔ | Live managed-database (DBaaS) service types and plans. |
 | `list_sks_versions(zone=None)` | ✔ | Live list of Kubernetes versions a new SKS cluster may use. |
 

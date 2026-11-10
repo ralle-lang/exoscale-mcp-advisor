@@ -3,11 +3,13 @@
 The advisor serves the reference bundle that ``exoscale-connector`` already ships
 (``exoscale_connector/_skill/reference.md``); no copy of the docs lives in this
 repository, so the knowledge is exactly as current as the installed connector
-version (design §4). This module parses that bundle and backs the two docs tools:
+version (design §4). This module parses that bundle and backs the three docs tools:
 
 - :func:`DocsBundle.search` — plain keyword ranking over every section
   (design §5: no embeddings, no runtime AI, deterministic and dependency-light).
 - :func:`DocsBundle.get_asset_page` — the full reference page for one asset type.
+- :meth:`DocsBundle.asset_type_index` — the slug + heading index behind
+  ``list_asset_types``.
 
 :class:`DocsBundle` is constructed from raw markdown so it is testable without the
 installed package; :meth:`DocsBundle.from_package` is the production loader and

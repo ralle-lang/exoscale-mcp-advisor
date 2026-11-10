@@ -33,7 +33,7 @@ updates:
       # .claude/skills/connector-release-triage (docs-only bump / new live tool /
       # decline), and .github/workflows/connector-watch.yml files that triage
       # issue. Letting Dependabot raise it would bypass that judgement and the
-      # CI floor matrix that guards it (design §16).
+      # CI floor run that guards it (design §16).
       - dependency-name: exoscale-connector
 
       # `mcp` is capped at <2 on purpose (see the comment on the dependency in
