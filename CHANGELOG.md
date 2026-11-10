@@ -19,18 +19,21 @@ docs tools now serve `exoscale-connector` 0.8.0's reference bundle.
   template, security-group, elastic-IP, pool, DNS, SKS and load-balancer
   operations, and DBaaS migration, PostgreSQL connection pools, the Kafka,
   OpenSearch and Valkey ACLs and the per-engine user options. The 0.8.0 DBaaS
-  pages were verified live against the API on five engines (design §20).
-- **`list_templates` returns three fields as typed fields.** 0.8.0 types
-  `maintainer`, `zones` and `application_consistent_snapshot_enabled` on the
-  connector's `Template` model. They used to pass through as untyped API
-  fields, so the last one was keyed `application-consistent-snapshot-enabled`;
-  it now uses the snake_case key like every other typed field (for example
-  `password_enabled`).
+  pages were verified live against the API on five engines, except for two
+  operations (`check_migration`, `reveal_kafka_connect_password`) (design §20).
+- **Breaking (`list_templates` output key):** `application-consistent-snapshot-enabled`
+  is now returned as `application_consistent_snapshot_enabled`. Connector
+  0.7.2 types it, `maintainer` and `zones` on its `Template` model; before, they
+  passed through as untyped API fields under their API names. Advisor 0.6.0
+  already showed the new key when run on connector 0.7.2 or later; the 0.8.0
+  floor makes it the same for everyone. The snake_case key matches every other
+  typed field (for example `password_enabled`).
 
 ### Not adopted
 
 - No connector release since 0.7.0 adds a client, and the new methods are
-  either writes or instance-scoped reads (`get_*`, `list_valkey_users`), so the
+  either writes or reads scoped to one of the account's own resources (such as
+  the `get_*` and `reveal_*` methods, `check_upgrade`, `list_valkey_users`), so the
   catalogue-only, list-only rule (design §3) adds no tool.
 
 ## [0.6.0] — 2026-11-02
@@ -193,13 +196,6 @@ construction.
   forward-pointer from §3; README documents the new tool and its wording was
   tightened.
 
-[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.7.0...HEAD
-[0.7.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.7.0
-[0.6.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.6.0
-[0.5.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.5.0
-[0.4.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.4.0
-[0.3.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.3.0
-
 ## [0.2.0] — 2026-06-12
 
 Grows the read-only tool surface from five to seven and smooths the live-tool
@@ -227,8 +223,6 @@ read-only by construction.
   install info, and an explicit no-pricing note) and an updated README tool
   table plus guidance for getting credentials into the MCP server launch env (#5).
 
-[0.2.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.2.0
-
 ## [0.1.0] — 2026-06-11
 
 First public release: a read-only Exoscale advisor MCP server.
@@ -251,4 +245,11 @@ First public release: a read-only Exoscale advisor MCP server.
   tests, protocol-level tests over the MCP in-memory transport, and an opt-in,
   read-only live smoke (`EXOSCALE_RUN_LIVE_TESTS=1`).
 
+[Unreleased]: https://github.com/ralle-lang/exoscale-mcp-advisor/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.7.0
+[0.6.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.6.0
+[0.5.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.5.0
+[0.4.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.4.0
+[0.3.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.3.0
+[0.2.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.2.0
 [0.1.0]: https://github.com/ralle-lang/exoscale-mcp-advisor/releases/tag/v0.1.0
